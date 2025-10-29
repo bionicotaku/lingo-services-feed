@@ -925,7 +925,7 @@ type Data_PostgreSQL struct {
 	MaxConnIdleTime   *durationpb.Duration `protobuf:"bytes,5,opt,name=max_conn_idle_time,json=maxConnIdleTime,proto3" json:"max_conn_idle_time,omitempty"`
 	HealthCheckPeriod *durationpb.Duration `protobuf:"bytes,6,opt,name=health_check_period,json=healthCheckPeriod,proto3" json:"health_check_period,omitempty"`
 	// Supabase 特定配置
-	Schema                    string                       `protobuf:"bytes,7,opt,name=schema,proto3" json:"schema,omitempty"`                                                                           // 默认 schema (如 "kratos_template")
+	Schema                    string                       `protobuf:"bytes,7,opt,name=schema,proto3" json:"schema,omitempty"`                                                                           // 默认 schema（Feed 服务使用 "feed"）
 	PreparedStatementsEnabled bool                         `protobuf:"varint,8,opt,name=prepared_statements_enabled,json=preparedStatementsEnabled,proto3" json:"prepared_statements_enabled,omitempty"` // Pooler 模式建议设为 false
 	Transaction               *Data_PostgreSQL_Transaction `protobuf:"bytes,9,opt,name=transaction,proto3" json:"transaction,omitempty"`
 	PoolMetricsEnabled        *bool                        `protobuf:"varint,10,opt,name=pool_metrics_enabled,json=poolMetricsEnabled,proto3,oneof" json:"pool_metrics_enabled,omitempty"`
@@ -1681,7 +1681,7 @@ const file_configs_conf_proto_rawDesc = "" +
 	"\x0flogging_enabled\x18\x03 \x01(\bH\x00R\x0eloggingEnabled\x88\x01\x01\x12,\n" +
 	"\x0fmetrics_enabled\x18\x04 \x01(\bH\x01R\x0emetricsEnabled\x88\x01\x01B\x12\n" +
 	"\x10_logging_enabledB\x12\n" +
-	"\x10_metrics_enabledB@Z>github.com/bionicotaku/lingo-services-feed/configs;configpbb\x06proto3"
+	"\x10_metrics_enabledB=Z;github.com/bionicotaku/lingo-services-feed/configs;configpbb\x06proto3"
 
 var (
 	file_configs_conf_proto_rawDescOnce sync.Once

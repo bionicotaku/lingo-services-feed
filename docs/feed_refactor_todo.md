@@ -19,10 +19,10 @@
   - [x] 全局替换 `lingo-services-profile` 引用，更新 `go.work`。  
   - [x] 验证：`go build ./...` 成功。
 - [ ] **1.2 更新配置协议**  
-  - [ ] 重写 `configs/conf.proto`（服务名称、默认 schema、topic、feature flags）。  
-  - [ ] 运行 `buf generate` 生成新的 `conf.pb.go`。  
-  - [ ] 调整 `configs/config.yaml` 默认值：`service.group=feed`、`schema=feed`、消息主题、Feature 开关。  
-  - [ ] 验证：`go test ./internal/infrastructure/configloader`.
+  - [x] 更新 `configs/conf.proto` 注释，明确默认 schema 为 `feed`。  
+  - [x] 运行 `buf generate` 生成新的 `conf.pb.go`。  
+  - [x] 调整 `configs/config.yaml` 默认值：`service.group=feed`、`schema=feed`、消息主题、Feature 开关。  
+  - [x] 验证：`go test ./internal/infrastructure/configloader`.
 - [ ] **1.3 Wire 依赖清洗**  
   - [ ] 重写 `cmd/grpc/wire.go`，仅注入 Feed 相关 Provider。  
   - [ ] 移除 Profile 服务的服务/仓储绑定。  

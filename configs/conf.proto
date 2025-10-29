@@ -58,7 +58,7 @@ message Data {
     google.protobuf.Duration health_check_period = 6;
 
     // Supabase 特定配置
-    string schema = 7;  // 默认 schema (如 "kratos_template")
+    string schema = 7;  // 默认 schema（Feed 服务使用 "feed"）
     bool prepared_statements_enabled = 8;  // Pooler 模式建议设为 false
     Transaction transaction = 9;
     optional bool pool_metrics_enabled = 10;

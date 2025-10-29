@@ -58,7 +58,7 @@ data:
     health_check_period: 60s
 
     # 默认 schema（Supabase）
-    schema: profile
+    schema: feed
     # Supabase Pooler 模式要求禁用 prepared statements
     prepared_statements_enabled: false
     # 是否上报连接池指标
@@ -100,7 +100,7 @@ observability:
   # 全局标签，附加到指标/追踪/日志
   global_attributes:
     # 服务所属分组标签
-    service.group: template
+    service.group: feed
     # 部署区域标签
     region: local
   # OpenTelemetry 追踪配置
@@ -132,7 +132,7 @@ observability:
 
 # 消息系统配置：Pub/Sub 与 Outbox 发布器
 messaging:
-  schema: profile
+  schema: feed
   topics:
     default:
       project_id: smiling-landing-472320-q0
@@ -164,14 +164,17 @@ messaging:
     metrics_enabled: true
   inboxes:
     default:
-      source_service: profile
+      source_service: feed
       max_concurrency: 4
       logging_enabled: true
       metrics_enabled: true
 
 # 功能开关：用于灰度切换新旧 Handler
 features:
-  # 是否启用 Profile gRPC 接口
-  enable_profile_api: true
-  # 是否保留 Catalog 旧版生命周期/查询 Handler
-  enable_legacy_catalog_api: true
+  # Feed gRPC 主入口
+  enable_feed_api: true
+  # 推荐服务 mock 切换（true 表示走本地投影随机推荐）
+  enable_mock_recommender: true
+  # 兼容旧 Profile 模板（待回收）
+  enable_profile_api: false
+  enable_legacy_catalog_api: false
