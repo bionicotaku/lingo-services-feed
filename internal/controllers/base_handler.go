@@ -109,6 +109,8 @@ func (h *BaseHandler) ExtractMetadata(ctx context.Context) metadata.HandlerMetad
 		} else {
 			meta.InvalidUserInfo = true
 		}
+	} else {
+		meta.InvalidUserInfo = true
 	}
 	return meta
 }

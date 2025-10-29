@@ -42,14 +42,14 @@
 - [ ] **3.1 数据迁移脚本**  
   - [x] 创建 `migrations/201_create_feed_schema.sql`：`feed.videos_projection`、`feed.inbox_events`、`feed.recommendation_logs`。  
   - [ ] 保留旧迁移用于回溯；上线前最后阶段确认废弃策略。  
-  - [ ] 在本地 Supabase/PG 上验证脚本。
+  - [x] 通过 Testcontainers 集成测试验证迁移可在 PostgreSQL 中执行。
 - [ ] **3.2 sqlc Schema & 查询**  
   - [x] 新增 `sqlc/schema/201_feed_schema.sql`，同步 Feed 表结构。  
   - [x] 更新 `sqlc.yaml`，生成 `internal/repositories/feeddb` 代码；执行 `sqlc generate`。  
-  - [ ] 核对生成 DAO 并补充测试。
+  - [x] 编写 Feed 投影/Inbox/日志仓储集成测试覆盖核心 DAO。
 - [ ] **3.3 Repository 实现**  
   - [x] 新增 Feed 专用仓储：`FeedVideoProjectionRepository`、`FeedInboxRepository`、`FeedRecommendationLogRepository`（保持 Profile 仓储暂存）。  
-  - [ ] 为新仓储补充日志/指标命名与集成测试。
+  - [x] 编写集成测试验证写入/读取流程；日志指标细节留待业务落地。
 - [x] **3.4 事务与连接池配置**  
   - [x] 更新 `config.yaml` 中默认 schema、Feature Flag。  
   - [x] 调整事务默认超时/锁等待/重试次数以适配读多写少。
