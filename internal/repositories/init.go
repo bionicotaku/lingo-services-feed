@@ -12,4 +12,7 @@ var ProviderSet = wire.NewSet(
 	NewProfileWatchLogsRepository,
 	NewProfileVideoProjectionRepository,
 	NewProfileVideoStatsRepository,
+	NewFeedVideoProjectionRepository,
+	NewFeedInboxRepository,
+	NewFeedRecommendationLogRepository,
 )

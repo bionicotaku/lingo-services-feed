@@ -8,6 +8,11 @@ import (
 	"github.com/google/uuid"
 )
 
+// FeedServiceInterface 抽象 Feed 获取用例。
+type FeedServiceInterface interface {
+	GetFeed(ctx context.Context, input GetFeedInput) (*vo.FeedResponse, error)
+}
+
 // ProfileServiceInterface 抽象 Profile 档案/偏好用例，便于测试替换。
 type ProfileServiceInterface interface {
 	GetProfile(ctx context.Context, userID uuid.UUID) (*vo.Profile, error)
@@ -40,6 +45,7 @@ type VideoStatsServiceInterface interface {
 }
 
 var (
+	_ FeedServiceInterface            = (*FeedService)(nil)
 	_ ProfileServiceInterface         = (*ProfileService)(nil)
 	_ EngagementServiceInterface      = (*EngagementService)(nil)
 	_ WatchHistoryServiceInterface    = (*WatchHistoryService)(nil)

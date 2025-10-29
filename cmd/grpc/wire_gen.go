@@ -8,7 +8,6 @@ package main
 
 import (
 	"context"
-
 	"github.com/bionicotaku/lingo-services-feed/internal/controllers"
 	"github.com/bionicotaku/lingo-services-feed/internal/infrastructure/configloader"
 	"github.com/bionicotaku/lingo-services-feed/internal/infrastructure/grpc_server"
@@ -75,6 +74,10 @@ func wireApp(contextContext context.Context, params configloader.Params) (*krato
 		cleanup()
 		return nil, nil, err
 	}
+	feedService := services.NewFeedService(logger)
+	handlerTimeouts := configloader.ProvideHandlerTimeouts(runtimeConfig)
+	baseHandler := controllers.NewBaseHandler(handlerTimeouts)
+	feedHandler := controllers.NewFeedHandler(feedService, baseHandler, logger)
 	databaseConfig := configloader.ProvideDatabaseConfig(runtimeConfig)
 	pgxpoolxConfig := configloader.ProvidePgxConfig(databaseConfig)
 	pgxpoolxComponent, cleanup4, err := pgxpoolx.ProvideComponent(contextContext, pgxpoolxConfig, logger)
@@ -108,10 +111,8 @@ func wireApp(contextContext context.Context, params configloader.Params) (*krato
 	profileVideoProjectionRepository := repositories.NewProfileVideoProjectionRepository(pool, logger)
 	videoProjectionService := services.NewVideoProjectionService(profileVideoProjectionRepository, logger)
 	videoStatsService := services.NewVideoStatsService(profileVideoStatsRepository, logger)
-	handlerTimeouts := configloader.ProvideHandlerTimeouts(runtimeConfig)
-	baseHandler := controllers.NewBaseHandler(handlerTimeouts)
 	profileHandler := controllers.NewProfileHandler(profileService, engagementService, watchHistoryService, videoProjectionService, videoStatsService, baseHandler)
-	server := grpcserver.NewGRPCServer(serverConfig, metricsConfig, serverMiddleware, profileHandler, logger)
+	server := grpcserver.NewGRPCServer(serverConfig, metricsConfig, serverMiddleware, feedHandler, profileHandler, logger)
 	gcpubsubConfig := configloader.ProvidePubSubConfig(messagingConfig)
 	dependencies := configloader.ProvidePubSubDependencies(logger)
 	gcpubsubComponent, cleanup6, err := gcpubsub.NewComponent(contextContext, gcpubsubConfig, dependencies)

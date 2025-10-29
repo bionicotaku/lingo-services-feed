@@ -68,11 +68,11 @@ data:
       # 默认隔离级别：read_committed / serializable / repeatable_read / read_uncommitted
       default_isolation: read_committed
       # 单次事务超时时间
-      default_timeout: 3s
+      default_timeout: 2s
       # 锁等待超时，避免长时间阻塞
-      lock_timeout: 1s
+      lock_timeout: 500ms
       # 建议最大重试次数（遇到 ErrRetryableTx 时由业务决定是否重试）
-      max_retries: 3
+      max_retries: 1
       # 是否启用 TxManager 指标
       metrics_enabled: true
 

@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package feed.v1;
+
+option go_package = "github.com/bionicotaku/lingo-services-feed/api/feed/v1;feedv1";
+
+import "google/protobuf/timestamp.proto";
+import "buf/validate/validate.proto";
+
+// FeedService 提供终端 Feed 推荐结果，所有接口仅通过 gRPC 暴露。
+service FeedService {
+  // GetFeed 返回针对指定用户/场景的推荐条目。
+  rpc GetFeed(GetFeedRequest) returns (GetFeedResponse);
+}
+
+// GetFeedRequest 描述 Feed 获取请求的参数。
+message GetFeedRequest {
+  // 用户标识。匿名用户可留空，具体策略由服务决定。
+  string user_id = 1;
+
+  // 场景标识，例如 "home"、"continue_watching"。
+  string scene = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+
+  // 请求条目数量，默认 20，最大 100。
+  int32 limit = 3 [(buf.validate.field).int32 = {gte: 1, lte: 100}];
+
+  // 游标，用于分页。
+  string cursor = 4;
+
+  // 额外元数据，用于透传客户端偏好或实验信息。
+  map<string, string> metadata = 5;
+}
+
+// GetFeedResponse 返回补水后的推荐卡片以及分页信息。
+message GetFeedResponse {
+  repeated FeedItem items = 1;
+
+  // 下一页游标，空值表示没有更多数据。
+  string next_cursor = 2;
+
+  // 是否存在未完成补水的条目。
+  bool partial = 3;
+
+  // 结果生成时间，UTC。
+  google.protobuf.Timestamp generated_at = 4;
+
+  // 补水缺失的视频 ID 列表，便于观测定位。
+  repeated MissingProjection missing_projections = 5;
+}
+
+// FeedItem 表示返回给终端的单个推荐卡片。
+message FeedItem {
+  string video_id = 1 [(buf.validate.field).string = {min_len: 1}];
+  string title = 2;
+  string description = 3;
+  int64 duration_micros = 4;
+  string thumbnail_url = 5;
+  string hls_master_playlist = 6;
+
+  string reason_code = 7;
+  string reason_label = 8;
+  double score = 9;
+
+  string visibility_status = 10;
+  google.protobuf.Timestamp published_at = 11;
+
+  map<string, string> attributes = 12;
+}
+
+// MissingProjection 描述未能补水的条目。
+message MissingProjection {
+  string video_id = 1;
+  string reason = 2;
+}

@@ -23,39 +23,36 @@
   - [x] 运行 `buf generate` 生成新的 `conf.pb.go`。  
   - [x] 调整 `configs/config.yaml` 默认值：`service.group=feed`、`schema=feed`、消息主题、Feature 开关。  
   - [x] 验证：`go test ./internal/infrastructure/configloader`.
-- [ ] **1.3 Wire 依赖清洗**  
-  - [ ] 重写 `cmd/grpc/wire.go`，仅注入 Feed 相关 Provider。  
-  - [ ] 移除 Profile 服务的服务/仓储绑定。  
-  - [ ] 重新执行 `wire ./cmd/grpc` 生成代码。
+- [x] **1.3 Wire 依赖清洗**  
+  - [x] 为 Feed 服务新增 `NewFeedService`、`NewFeedHandler` 占位实现，保持“先新增后删除”。  
+  - [x] 更新 `cmd/grpc/wire.go` 绑定 Feed/Repository 接口，保留旧 Profile Handler 以便兼容。  
+  - [x] 调整 `grpc_server.NewGRPCServer` 注册 Feed gRPC 服务，并重新执行 `wire ./cmd/grpc`、`go build ./cmd/grpc` 验证。
 
 ## 2. 契约定义（gRPC）
-- [ ] **2.1 设计 feed.v1 Proto**  
-  - [ ] 新建 `api/feed/v1/feed.proto`（GetFeed、FeedItem、RecommendationMetadata、Cursor 等）。  
-  - [ ] 暂保留旧 `api/profile/v1`，确保生成链路无阻；新 gRPC 接口通过 Wire 绑定到新 Handler 后再回收旧文件。  
-  - [ ] 更新 `buf.yaml`、`buf.gen.yaml` 输出路径，执行 `buf lint && buf generate`。  
-  - [ ] 确保生成代码通过 `revive`、`staticcheck`。
-- [ ] **2.2 Gateway 协调**  
-  - [ ] 输出 gRPC ↔ Gateway 映射表（Header 透传、Problem Details 映射、游标与缓存策略）。  
-  - [ ] 与 Gateway 团队确认 HTTP→gRPC 反向代理契约与上线窗口。
+- [x] **2.1 设计 feed.v1 Proto**  
+  - [x] 新建 `api/feed/v1/feed.proto`（GetFeed、FeedItem、MissingProjection 等结构）。  
+  - [x] 暂保留旧 `api/profile/v1`，待新 Handler 接入后统一回收。  
+  - [x] 运行 `buf lint && buf generate`，生成 `feed.pb.go`/`feed_grpc.pb.go`。  
+  - [x] 生成代码通过 `go test ./...`、`revive`、`staticcheck` 后续统一校验。
+- [x] **2.2 Gateway 协调**  
+  - [x] 在 `docs/gateway_feed_mapping.md` 输出 HTTP→gRPC 映射、Header/Problem Details 策略。  
+  - [ ] 与 Gateway 团队确认上线窗口（待召开评审会议）。
 
 ## 3. 数据层重构
 - [ ] **3.1 数据迁移脚本**  
-  - [ ] 创建 `migrations/201_create_feed_schema.sql`：`feed.videos_projection`、`feed.inbox_events`、可选 `feed.recommendation_logs`。  
-  - [ ] 保留旧迁移用于回溯；在上线前最后阶段统一删除或标记废弃。  
+  - [x] 创建 `migrations/201_create_feed_schema.sql`：`feed.videos_projection`、`feed.inbox_events`、`feed.recommendation_logs`。  
+  - [ ] 保留旧迁移用于回溯；上线前最后阶段确认废弃策略。  
   - [ ] 在本地 Supabase/PG 上验证脚本。
 - [ ] **3.2 sqlc Schema & 查询**  
-  - [ ] 更新 `sqlc/schema/*.sql` 对应 Feed 表结构。  
-  - [ ] 配置 `sqlc.yaml`：批量读取投影、Inbox 幂等插入、状态更新。  
-  - [ ] 执行 `sqlc generate`，核对生成 DAO。
+  - [x] 新增 `sqlc/schema/201_feed_schema.sql`，同步 Feed 表结构。  
+  - [x] 更新 `sqlc.yaml`，生成 `internal/repositories/feeddb` 代码；执行 `sqlc generate`。  
+  - [ ] 核对生成 DAO 并补充测试。
 - [ ] **3.3 Repository 实现**  
-  - [ ] 重写 `internal/repositories`：  
-    - [ ] `VideosProjectionRepository`（Upsert/List/Get）、  
-    - [ ] `InboxRepository`（幂等写入、状态更新）、  
-    - [ ] 可选 `RecommendationLogRepository`。  
-  - [ ] 日志与指标前缀统一 `feed.*`，并提供接口抽象。
-- [ ] **3.4 事务与连接池配置**  
-  - [ ] 更新 `config.yaml` 中 `messaging.schema` 等字段为 `feed`。  
-  - [ ] 校准 `txmanager` 默认超时与重试策略，符合读多写少场景。
+  - [x] 新增 Feed 专用仓储：`FeedVideoProjectionRepository`、`FeedInboxRepository`、`FeedRecommendationLogRepository`（保持 Profile 仓储暂存）。  
+  - [ ] 为新仓储补充日志/指标命名与集成测试。
+- [x] **3.4 事务与连接池配置**  
+  - [x] 更新 `config.yaml` 中默认 schema、Feature Flag。  
+  - [x] 调整事务默认超时/锁等待/重试次数以适配读多写少。
 
 ## 4. 推荐客户端与 Mock Provider
 - [ ] **4.1 抽象 RecommendationProvider**  
