@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bionicotaku/lingo-services-profile/internal/repositories"
-	"github.com/bionicotaku/lingo-services-profile/internal/services"
+	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
+	"github.com/bionicotaku/lingo-services-feed/internal/services"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"

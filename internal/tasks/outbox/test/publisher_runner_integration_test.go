@@ -13,8 +13,8 @@ import (
 
 	"cloud.google.com/go/pubsub/pstest"
 	"cloud.google.com/go/pubsub/v2/apiv1/pubsubpb"
-	"github.com/bionicotaku/lingo-services-profile/internal/repositories"
-	"github.com/bionicotaku/lingo-services-profile/internal/services"
+	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
+	"github.com/bionicotaku/lingo-services-feed/internal/services"
 	"github.com/bionicotaku/lingo-utils/gcpubsub"
 	outboxcfg "github.com/bionicotaku/lingo-utils/outbox/config"
 	outboxpublisher "github.com/bionicotaku/lingo-utils/outbox/publisher"

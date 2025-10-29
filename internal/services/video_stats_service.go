@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bionicotaku/lingo-services-profile/internal/models/po"
+	"github.com/bionicotaku/lingo-services-feed/internal/models/po"
 	"github.com/bionicotaku/lingo-utils/txmanager"
 
 	"github.com/go-kratos/kratos/v2/log"

@@ -8,7 +8,7 @@ import (
 	"flag"
 	"sync"
 
-	configloader "github.com/bionicotaku/lingo-services-profile/internal/infrastructure/configloader"
+	configloader "github.com/bionicotaku/lingo-services-feed/internal/infrastructure/configloader"
 	obswire "github.com/bionicotaku/lingo-utils/observability"
 	outboxpublisher "github.com/bionicotaku/lingo-utils/outbox/publisher"
 	"github.com/go-kratos/kratos/v2"

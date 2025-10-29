@@ -3,8 +3,8 @@ package services
 import (
 	"context"
 
-	"github.com/bionicotaku/lingo-services-profile/internal/models/po"
-	"github.com/bionicotaku/lingo-services-profile/internal/models/vo"
+	"github.com/bionicotaku/lingo-services-feed/internal/models/po"
+	"github.com/bionicotaku/lingo-services-feed/internal/models/vo"
 	"github.com/google/uuid"
 )
 

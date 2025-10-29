@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bionicotaku/lingo-services-profile/internal/repositories"
+	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
 	outboxcfg "github.com/bionicotaku/lingo-utils/outbox/config"
 	"github.com/docker/go-connections/nat"
 	"github.com/go-kratos/kratos/v2/log"

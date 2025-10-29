@@ -3,9 +3,9 @@
 package grpcserver
 
 import (
-	profilev1 "github.com/bionicotaku/lingo-services-profile/api/profile/v1"
-	"github.com/bionicotaku/lingo-services-profile/internal/controllers"
-	configloader "github.com/bionicotaku/lingo-services-profile/internal/infrastructure/configloader"
+	profilev1 "github.com/bionicotaku/lingo-services-feed/api/profile/v1"
+	"github.com/bionicotaku/lingo-services-feed/internal/controllers"
+	configloader "github.com/bionicotaku/lingo-services-feed/internal/infrastructure/configloader"
 
 	"github.com/bionicotaku/lingo-utils/gcjwt"
 	"github.com/bionicotaku/lingo-utils/observability"

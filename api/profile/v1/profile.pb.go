@@ -2025,7 +2025,7 @@ const file_api_profile_v1_profile_proto_rawDesc = "" +
 	"\rListFavorites\x12 .profile.v1.ListFavoritesRequest\x1a!.profile.v1.ListFavoritesResponse\x12f\n" +
 	"\x13UpsertWatchProgress\x12&.profile.v1.UpsertWatchProgressRequest\x1a'.profile.v1.UpsertWatchProgressResponse\x12]\n" +
 	"\x10ListWatchHistory\x12#.profile.v1.ListWatchHistoryRequest\x1a$.profile.v1.ListWatchHistoryResponse\x12T\n" +
-	"\rPurgeUserData\x12 .profile.v1.PurgeUserDataRequest\x1a!.profile.v1.PurgeUserDataResponseBHZFgithub.com/bionicotaku/lingo-services-profile/api/profile/v1;profilev1b\x06proto3"
+	"\rPurgeUserData\x12 .profile.v1.PurgeUserDataRequest\x1a!.profile.v1.PurgeUserDataResponseBHZFgithub.com/bionicotaku/lingo-services-feed/api/profile/v1;profilev1b\x06proto3"
 
 var (
 	file_api_profile_v1_profile_proto_rawDescOnce sync.Once

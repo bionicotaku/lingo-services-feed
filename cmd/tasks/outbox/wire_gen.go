@@ -10,9 +10,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bionicotaku/lingo-services-profile/internal/infrastructure/configloader"
-	"github.com/bionicotaku/lingo-services-profile/internal/repositories"
-	"github.com/bionicotaku/lingo-services-profile/internal/tasks/outbox"
+	"github.com/bionicotaku/lingo-services-feed/internal/infrastructure/configloader"
+	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
+	"github.com/bionicotaku/lingo-services-feed/internal/tasks/outbox"
 	"github.com/bionicotaku/lingo-utils/gclog"
 	"github.com/bionicotaku/lingo-utils/gcpubsub"
 	"github.com/bionicotaku/lingo-utils/observability"

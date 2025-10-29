@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bionicotaku/lingo-services-profile/internal/repositories"
-	"github.com/bionicotaku/lingo-services-profile/internal/services"
+	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
+	"github.com/bionicotaku/lingo-services-feed/internal/services"
 	outboxcfg "github.com/bionicotaku/lingo-utils/outbox/config"
 	"github.com/bionicotaku/lingo-utils/txmanager"
 	"github.com/go-kratos/kratos/v2/log"

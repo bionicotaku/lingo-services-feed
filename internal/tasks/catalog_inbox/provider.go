@@ -1,7 +1,7 @@
 package cataloginbox
 
 import (
-	"github.com/bionicotaku/lingo-services-profile/internal/repositories"
+	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
 	"github.com/bionicotaku/lingo-utils/gcpubsub"
 	outboxcfg "github.com/bionicotaku/lingo-utils/outbox/config"
 	"github.com/bionicotaku/lingo-utils/txmanager"

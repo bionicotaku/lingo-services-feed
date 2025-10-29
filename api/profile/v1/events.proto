@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package profile.v1;
 
-option go_package = "github.com/bionicotaku/lingo-services-profile/api/profile/v1;profilev1";
+option go_package = "github.com/bionicotaku/lingo-services-feed/api/profile/v1;profilev1";
 
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";

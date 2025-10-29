@@ -6,9 +6,9 @@ import (
 	"io"
 	"testing"
 
-	"github.com/bionicotaku/lingo-services-profile/internal/repositories"
-	"github.com/bionicotaku/lingo-services-profile/internal/services"
-	"github.com/bionicotaku/lingo-services-profile/internal/services/mocks"
+	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
+	"github.com/bionicotaku/lingo-services-feed/internal/services"
+	"github.com/bionicotaku/lingo-services-feed/internal/services/mocks"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"

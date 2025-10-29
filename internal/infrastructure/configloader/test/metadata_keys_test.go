@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	configloader "github.com/bionicotaku/lingo-services-profile/internal/infrastructure/configloader"
+	configloader "github.com/bionicotaku/lingo-services-feed/internal/infrastructure/configloader"
 )
 
 func TestLoadMetadataKeys(t *testing.T) {

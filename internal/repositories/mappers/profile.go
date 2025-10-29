@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bionicotaku/lingo-services-profile/internal/models/po"
-	profiledb "github.com/bionicotaku/lingo-services-profile/internal/repositories/profiledb"
+	"github.com/bionicotaku/lingo-services-feed/internal/models/po"
+	profiledb "github.com/bionicotaku/lingo-services-feed/internal/repositories/profiledb"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"

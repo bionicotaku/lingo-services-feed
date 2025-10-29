@@ -325,7 +325,7 @@ const file_api_profile_v1_events_proto_rawDesc = "" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x19\n" +
 	"\bvideo_id\x18\x03 \x01(\tR\avideoId\x125\n" +
 	"\bprogress\x18\x04 \x01(\v2\x19.profile.v1.WatchProgressR\bprogress\x121\n" +
-	"\acontext\x18\x05 \x01(\v2\x17.google.protobuf.StructR\acontextBHZFgithub.com/bionicotaku/lingo-services-profile/api/profile/v1;profilev1b\x06proto3"
+	"\acontext\x18\x05 \x01(\v2\x17.google.protobuf.StructR\acontextBHZFgithub.com/bionicotaku/lingo-services-feed/api/profile/v1;profilev1b\x06proto3"
 
 var (
 	file_api_profile_v1_events_proto_rawDescOnce sync.Once

@@ -4,8 +4,8 @@ package dto
 import (
 	"time"
 
-	profilev1 "github.com/bionicotaku/lingo-services-profile/api/profile/v1"
-	"github.com/bionicotaku/lingo-services-profile/internal/models/vo"
+	profilev1 "github.com/bionicotaku/lingo-services-feed/api/profile/v1"
+	"github.com/bionicotaku/lingo-services-feed/internal/models/vo"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"

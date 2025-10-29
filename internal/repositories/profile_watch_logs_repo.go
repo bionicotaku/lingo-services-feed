@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bionicotaku/lingo-services-profile/internal/models/po"
-	"github.com/bionicotaku/lingo-services-profile/internal/repositories/mappers"
-	profiledb "github.com/bionicotaku/lingo-services-profile/internal/repositories/profiledb"
+	"github.com/bionicotaku/lingo-services-feed/internal/models/po"
+	"github.com/bionicotaku/lingo-services-feed/internal/repositories/mappers"
+	profiledb "github.com/bionicotaku/lingo-services-feed/internal/repositories/profiledb"
 
 	"github.com/bionicotaku/lingo-utils/txmanager"
 	"github.com/go-kratos/kratos/v2/log"

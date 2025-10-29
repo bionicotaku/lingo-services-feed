@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	configpb "github.com/bionicotaku/lingo-services-profile/configs"
+	configpb "github.com/bionicotaku/lingo-services-feed/configs"
 
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/go-kratos/kratos/v2/config"

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bionicotaku/lingo-services-profile/internal/models/po"
-	"github.com/bionicotaku/lingo-services-profile/internal/models/vo"
-	"github.com/bionicotaku/lingo-services-profile/internal/repositories"
+	"github.com/bionicotaku/lingo-services-feed/internal/models/po"
+	"github.com/bionicotaku/lingo-services-feed/internal/models/vo"
+	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
 	"github.com/bionicotaku/lingo-utils/txmanager"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"

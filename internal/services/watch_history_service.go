@@ -7,9 +7,9 @@ import (
 	"math"
 	"time"
 
-	outboxevents "github.com/bionicotaku/lingo-services-profile/internal/models/outbox_events"
-	"github.com/bionicotaku/lingo-services-profile/internal/models/po"
-	"github.com/bionicotaku/lingo-services-profile/internal/repositories"
+	outboxevents "github.com/bionicotaku/lingo-services-feed/internal/models/outbox_events"
+	"github.com/bionicotaku/lingo-services-feed/internal/models/po"
+	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
 	"github.com/bionicotaku/lingo-utils/txmanager"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"

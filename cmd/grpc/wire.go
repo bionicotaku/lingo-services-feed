@@ -10,12 +10,12 @@ package main
 import (
 	"context"
 
-	"github.com/bionicotaku/lingo-services-profile/internal/controllers"
-	configloader "github.com/bionicotaku/lingo-services-profile/internal/infrastructure/configloader"
-	grpcserver "github.com/bionicotaku/lingo-services-profile/internal/infrastructure/grpc_server"
-	"github.com/bionicotaku/lingo-services-profile/internal/repositories"
-	"github.com/bionicotaku/lingo-services-profile/internal/services"
-	outboxtasks "github.com/bionicotaku/lingo-services-profile/internal/tasks/outbox"
+	"github.com/bionicotaku/lingo-services-feed/internal/controllers"
+	configloader "github.com/bionicotaku/lingo-services-feed/internal/infrastructure/configloader"
+	grpcserver "github.com/bionicotaku/lingo-services-feed/internal/infrastructure/grpc_server"
+	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
+	"github.com/bionicotaku/lingo-services-feed/internal/services"
+	outboxtasks "github.com/bionicotaku/lingo-services-feed/internal/tasks/outbox"
 
 	"github.com/bionicotaku/lingo-utils/gcjwt"
 	"github.com/bionicotaku/lingo-utils/gclog"

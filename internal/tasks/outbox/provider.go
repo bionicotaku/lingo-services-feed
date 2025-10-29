@@ -6,7 +6,7 @@ import (
 	outboxcfg "github.com/bionicotaku/lingo-utils/outbox/config"
 	outboxpublisher "github.com/bionicotaku/lingo-utils/outbox/publisher"
 
-	"github.com/bionicotaku/lingo-services-profile/internal/repositories"
+	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
 	"github.com/bionicotaku/lingo-utils/gcpubsub"
 	"github.com/go-kratos/kratos/v2/log"
 	"go.opentelemetry.io/otel"

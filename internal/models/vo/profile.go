@@ -4,7 +4,7 @@ package vo
 import (
 	"time"
 
-	"github.com/bionicotaku/lingo-services-profile/internal/models/po"
+	"github.com/bionicotaku/lingo-services-feed/internal/models/po"
 )
 
 // Profile 表示向上层返回的档案视图。

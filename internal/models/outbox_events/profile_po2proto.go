@@ -3,8 +3,8 @@ package outboxevents
 import (
 	"fmt"
 
-	profilev1 "github.com/bionicotaku/lingo-services-profile/api/profile/v1"
-	"github.com/bionicotaku/lingo-services-profile/internal/models/po"
+	profilev1 "github.com/bionicotaku/lingo-services-feed/api/profile/v1"
+	"github.com/bionicotaku/lingo-services-feed/internal/models/po"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
