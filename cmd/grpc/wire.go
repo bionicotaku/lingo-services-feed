@@ -62,7 +62,6 @@ func wireApp(context.Context, configloader.Params) (*kratos.App, func(), error) 
 		services.NewMockRecommendationProvider,
 		services.NewFeedService,
 		wire.Bind(new(services.RecommendationProvider), new(*services.MockRecommendationProvider)),
-		wire.Bind(new(services.RecommendationLogRepository), new(*repositories.FeedRecommendationLogRepository)),
 		controllers.ProviderSet, // 控制器层（gRPC handlers）
 		newApp,                  // 组装 Kratos 应用
 	))

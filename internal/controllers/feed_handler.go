@@ -14,8 +14,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// feedServiceAPI 定义 FeedHandler 依赖的 Service 能力。
-type feedServiceAPI interface {
+// FeedServiceAPI 定义 FeedHandler 依赖的 Service 能力。
+type FeedServiceAPI interface {
 	GetFeed(ctx context.Context, input services.GetFeedInput) (*vo.FeedResponse, error)
 }
 
@@ -24,12 +24,12 @@ type FeedHandler struct {
 	feedv1.UnimplementedFeedServiceServer
 
 	*BaseHandler
-	service feedServiceAPI
+	service FeedServiceAPI
 	log     *log.Helper
 }
 
 // NewFeedHandler 构造 FeedHandler。
-func NewFeedHandler(feed feedServiceAPI, base *BaseHandler, logger log.Logger) *FeedHandler {
+func NewFeedHandler(feed FeedServiceAPI, base *BaseHandler, logger log.Logger) *FeedHandler {
 	if base == nil {
 		base = NewBaseHandler(HandlerTimeouts{})
 	}

@@ -8,10 +8,9 @@ package main
 
 import (
 	"context"
-
 	"github.com/bionicotaku/lingo-services-feed/internal/controllers"
 	"github.com/bionicotaku/lingo-services-feed/internal/infrastructure/configloader"
-	grpcserver "github.com/bionicotaku/lingo-services-feed/internal/infrastructure/grpc_server"
+	"github.com/bionicotaku/lingo-services-feed/internal/infrastructure/grpc_server"
 	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
 	"github.com/bionicotaku/lingo-services-feed/internal/services"
 	"github.com/bionicotaku/lingo-utils/gcjwt"
@@ -20,7 +19,9 @@ import (
 	"github.com/bionicotaku/lingo-utils/pgxpoolx"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/google/wire"
+)
 
+import (
 	_ "go.uber.org/automaxprocs"
 )
 
@@ -85,9 +86,10 @@ func wireApp(contextContext context.Context, params configloader.Params) (*krato
 	mockRecommendationProvider := services.NewMockRecommendationProvider(feedVideoProjectionRepository, logger)
 	feedRecommendationLogRepository := repositories.NewFeedRecommendationLogRepository(pool, logger)
 	feedService := services.NewFeedService(mockRecommendationProvider, feedVideoProjectionRepository, feedRecommendationLogRepository, logger)
+	feedServiceAPI := controllers.ProvideFeedServiceAPI(feedService)
 	handlerTimeouts := configloader.ProvideHandlerTimeouts(runtimeConfig)
 	baseHandler := controllers.NewBaseHandler(handlerTimeouts)
-	feedHandler := controllers.NewFeedHandler(feedService, baseHandler, logger)
+	feedHandler := controllers.NewFeedHandler(feedServiceAPI, baseHandler, logger)
 	server := grpcserver.NewGRPCServer(serverConfig, metricsConfig, serverMiddleware, feedHandler, logger)
 	app := newApp(observabilityComponent, logger, server, serviceInfo)
 	return app, func() {
