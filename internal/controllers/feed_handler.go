@@ -41,8 +41,18 @@ func (h *FeedHandler) GetFeed(ctx context.Context, req *feedv1.GetFeedRequest) (
 		return nil, status.Error(codes.InvalidArgument, "request is nil")
 	}
 
+	meta := h.ExtractMetadata(ctx)
+	if meta.InvalidUserInfo {
+		return nil, status.Error(codes.Unauthenticated, "invalid user info")
+	}
+
+	userID := req.GetUserId()
+	if userID == "" {
+		userID = meta.UserID
+	}
+
 	input := services.GetFeedInput{
-		UserID: req.GetUserId(),
+		UserID: userID,
 		Scene:  req.GetScene(),
 		Limit:  int(req.GetLimit()),
 		Cursor: req.GetCursor(),
@@ -56,8 +66,8 @@ func (h *FeedHandler) GetFeed(ctx context.Context, req *feedv1.GetFeedRequest) (
 	switch {
 	case err == nil:
 		return toProtoFeedResponse(res), nil
-	case errors.Is(err, services.ErrFeedServiceNotImplemented):
-		return nil, status.Error(codes.Unimplemented, err.Error())
+	case errors.Is(err, services.ErrRecommendationUnavailable):
+		return nil, status.Error(codes.Unavailable, err.Error())
 	default:
 		h.log.WithContext(ctx).Errorw("msg", "get feed failed", "error", err)
 		return nil, status.Errorf(codes.Internal, "get feed: %v", err)

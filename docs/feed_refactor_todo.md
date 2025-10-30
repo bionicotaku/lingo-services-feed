@@ -59,9 +59,9 @@
   - [ ] 在 `internal/services` 新建接口（`GetFeed(ctx, userID, scene, limit, cursor)`）、数据结构与错误类型。  
   - [ ] 提供 Wire 绑定声明。
 - [ ] **4.2 Mock 推荐实现**  
-  - [ ] 基于 `feed.videos_projection` 随机抽样，附带 `mock.random` reason，支持 deterministic seed。  
+  - [x] 基于 `feed.videos_projection` 随机抽样，附带 `mock.random` reason，支持 deterministic seed。  
   - [ ] 记录指标：`feed_recommendation_latency_ms`、`feed_recommendation_fail_total`。  
-  - [ ] 新增配置开关：`features.enable_mock_recommender`。
+  - [x] 新增配置开关：`features.enable_mock_recommender`。
 - [ ] **4.3 真实 gRPC 客户端占位**  
   - [ ] 新建 `internal/clients/recommendation` stub（kratos gRPC client、超时、Tracing）。  
   - [ ] 实现运行期开关选择 Mock / Real。  
@@ -69,8 +69,8 @@
 
 ## 5. Service 层实现
 - [ ] **5.1 FeedService**  
-  - [ ] 实现 `GetFeed`：解析 Metadata → 调用推荐 → 批量补水 → 组装响应 → 记录 partial 与指标 → 可选日志写入。  
-  - [ ] 定义错误映射（推荐异常对应 Problem 503、投影缺失返回 partial）。  
+  - [x] 实现 `GetFeed`：解析 Metadata → 调用推荐 → 批量补水 → 组装响应 → 输出 partial 状态（指标待补充）；可选日志写入待定。  
+  - [x] 定义错误映射（推荐异常对应 Problem 503、投影缺失返回 partial）。  
   - [ ] 输出指标：`feed_partial_response_total`、`feed_projection_missing_total`。
 - [ ] **5.2 ProjectionService**  
   - [ ] 提供 `BatchGet`/`ListByIDs`，处理版本冲突、缺失兜底策略。  

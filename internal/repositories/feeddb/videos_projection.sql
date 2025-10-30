@@ -68,3 +68,10 @@ select
   updated_at
 from feed.videos_projection
 where video_id = any($1::uuid[]);
+
+-- name: ListRandomVideoIDs :many
+select video_id
+from feed.videos_projection
+where status = 'ready'
+order by random()
+limit $1;

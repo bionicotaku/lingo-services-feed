@@ -74,10 +74,6 @@ func wireApp(contextContext context.Context, params configloader.Params) (*krato
 		cleanup()
 		return nil, nil, err
 	}
-	feedService := services.NewFeedService(logger)
-	handlerTimeouts := configloader.ProvideHandlerTimeouts(runtimeConfig)
-	baseHandler := controllers.NewBaseHandler(handlerTimeouts)
-	feedHandler := controllers.NewFeedHandler(feedService, baseHandler, logger)
 	databaseConfig := configloader.ProvideDatabaseConfig(runtimeConfig)
 	pgxpoolxConfig := configloader.ProvidePgxConfig(databaseConfig)
 	pgxpoolxComponent, cleanup4, err := pgxpoolx.ProvideComponent(contextContext, pgxpoolxConfig, logger)
@@ -88,6 +84,12 @@ func wireApp(contextContext context.Context, params configloader.Params) (*krato
 		return nil, nil, err
 	}
 	pool := pgxpoolx.ProvidePool(pgxpoolxComponent)
+	feedVideoProjectionRepository := repositories.NewFeedVideoProjectionRepository(pool, logger)
+	mockRecommendationProvider := services.NewMockRecommendationProvider(feedVideoProjectionRepository, logger)
+	feedService := services.NewFeedService(mockRecommendationProvider, feedVideoProjectionRepository, logger)
+	handlerTimeouts := configloader.ProvideHandlerTimeouts(runtimeConfig)
+	baseHandler := controllers.NewBaseHandler(handlerTimeouts)
+	feedHandler := controllers.NewFeedHandler(feedService, baseHandler, logger)
 	profileUsersRepository := repositories.NewProfileUsersRepository(pool, logger)
 	txmanagerConfig := configloader.ProvideTxConfig(runtimeConfig)
 	txmanagerComponent, cleanup5, err := txmanager.NewComponent(txmanagerConfig, pool, logger)

@@ -48,6 +48,34 @@ func (q *Queries) GetVideoProjection(ctx context.Context, videoID uuid.UUID) (Fe
 	return i, err
 }
 
+const listRandomVideoIDs = `-- name: ListRandomVideoIDs :many
+select video_id
+from feed.videos_projection
+where status = 'ready'
+order by random()
+limit $1
+`
+
+func (q *Queries) ListRandomVideoIDs(ctx context.Context, limit int32) ([]uuid.UUID, error) {
+	rows, err := q.db.Query(ctx, listRandomVideoIDs, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []uuid.UUID{}
+	for rows.Next() {
+		var video_id uuid.UUID
+		if err := rows.Scan(&video_id); err != nil {
+			return nil, err
+		}
+		items = append(items, video_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listVideoProjections = `-- name: ListVideoProjections :many
 select
   video_id,

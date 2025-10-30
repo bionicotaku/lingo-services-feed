@@ -103,3 +103,23 @@ func (r *FeedVideoProjectionRepository) ListByIDs(ctx context.Context, sess txma
 	}
 	return result, nil
 }
+
+// ListRandomIDs 返回随机挑选的 video_id 列表。
+func (r *FeedVideoProjectionRepository) ListRandomIDs(ctx context.Context, sess txmanager.Session, limit int) ([]uuid.UUID, error) {
+	if limit <= 0 {
+		return nil, nil
+	}
+	queries := r.queries
+	if sess != nil {
+		queries = queries.WithTx(sess.Tx())
+	}
+	rows, err := queries.ListRandomVideoIDs(ctx, int32(limit))
+	if err != nil {
+		return nil, fmt.Errorf("list random feed video ids: %w", err)
+	}
+	ids := make([]uuid.UUID, len(rows))
+	for i, id := range rows {
+		ids[i] = id
+	}
+	return ids, nil
+}

@@ -27,10 +27,10 @@ type RecommendationResult struct {
 
 // RecommendationItem 表示推荐返回的单条数据。
 type RecommendationItem struct {
-	VideoID   string
-	Reason    string
-	Score     float64
-	Metadata  map[string]string
+	VideoID  string
+	Reason   string
+	Score    float64
+	Metadata map[string]string
 }
 
 // ErrRecommendationUnavailable 表示推荐不可用。
