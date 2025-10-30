@@ -126,12 +126,14 @@ func newFeedService(provider services.RecommendationProvider) *services.FeedServ
 }
 
 type stubRecommendationProvider struct {
-	items  []services.RecommendationItem
-	err    error
-	source string
+	items     []services.RecommendationItem
+	err       error
+	source    string
+	lastInput services.RecommendationInput
 }
 
-func (s *stubRecommendationProvider) GetFeed(_ context.Context, _ services.RecommendationInput) (*services.RecommendationResult, error) {
+func (s *stubRecommendationProvider) GetFeed(_ context.Context, input services.RecommendationInput) (*services.RecommendationResult, error) {
+	s.lastInput = input
 	if s.err != nil {
 		return nil, s.err
 	}
@@ -255,6 +257,64 @@ func TestFeedService_GetFeed_PartialLogsMissing(t *testing.T) {
 	require.ElementsMatch(t, []string{video2.String()}, logEntry.missingVideoIDs)
 	require.Equal(t, "stub", logEntry.source)
 	require.False(t, logEntry.errorKind.Valid)
+}
+
+func TestFeedService_GetFeed_EmptyRecommendationLogged(t *testing.T) {
+	resetDatabase(t)
+	ctx := context.Background()
+
+	provider := &stubRecommendationProvider{source: "stub"}
+	service := newFeedService(provider)
+
+	resp, err := service.GetFeed(ctx, services.GetFeedInput{UserID: "user-4", Limit: 5})
+	require.NoError(t, err)
+	require.False(t, resp.Partial)
+	require.Empty(t, resp.Items)
+
+	logEntry := fetchLatestRecommendationLog(ctx, t)
+	require.Equal(t, int32(5), logEntry.requestLimit)
+	require.Empty(t, logEntry.recommendedItems)
+	require.Empty(t, logEntry.missingVideoIDs)
+}
+
+func TestFeedService_GetFeed_InvalidVideoIDHandled(t *testing.T) {
+	resetDatabase(t)
+	ctx := context.Background()
+
+	provider := &stubRecommendationProvider{
+		source: "stub",
+		items:  []services.RecommendationItem{{VideoID: "not-a-uuid", Reason: "broken", Score: 0.1}},
+	}
+
+	service := newFeedService(provider)
+
+	resp, err := service.GetFeed(ctx, services.GetFeedInput{UserID: "user-5", Limit: 1})
+	require.NoError(t, err)
+	require.True(t, resp.Partial)
+	require.Empty(t, resp.Items)
+	require.NotEmpty(t, resp.MissingProjections)
+	foundInvalid := false
+	for _, m := range resp.MissingProjections {
+		if m.VideoID == "not-a-uuid" && m.Reason == "invalid video id" {
+			foundInvalid = true
+		}
+	}
+	require.True(t, foundInvalid, "expected invalid video id entry")
+
+	logEntry := fetchLatestRecommendationLog(ctx, t)
+	require.Contains(t, logEntry.missingVideoIDs, "not-a-uuid")
+}
+
+func TestFeedService_GetFeed_DefaultLimitApplied(t *testing.T) {
+	resetDatabase(t)
+	ctx := context.Background()
+
+	provider := &stubRecommendationProvider{source: "stub"}
+	service := newFeedService(provider)
+
+	_, err := service.GetFeed(ctx, services.GetFeedInput{UserID: "user-6", Limit: 0})
+	require.NoError(t, err)
+	require.Equal(t, 10, provider.lastInput.Limit)
 }
 
 func TestFeedService_GetFeed_RecommendationErrorLogged(t *testing.T) {
