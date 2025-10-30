@@ -19,12 +19,12 @@ type FeedHandler struct {
 	feedv1.UnimplementedFeedServiceServer
 
 	*BaseHandler
-	service services.FeedServiceInterface
+	service *services.FeedService
 	log     *log.Helper
 }
 
 // NewFeedHandler 构造 FeedHandler。
-func NewFeedHandler(feed services.FeedServiceInterface, base *BaseHandler, logger log.Logger) *FeedHandler {
+func NewFeedHandler(feed *services.FeedService, base *BaseHandler, logger log.Logger) *FeedHandler {
 	if base == nil {
 		base = NewBaseHandler(HandlerTimeouts{})
 	}

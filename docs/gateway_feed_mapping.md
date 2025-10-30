@@ -7,10 +7,7 @@
   - HTTP：`GET /api/v1/feed`
 - **请求映射**
   - `Authorization` → Gateway 校验并生成 `x-apigateway-api-userinfo`，随后转发；Feed 服务本地默认开启 `skip_validate=true`。
-  - `scene`（query，必填） → `GetFeedRequest.scene`
-  - `limit`（query，默认 20，上限 100） → `GetFeedRequest.limit`
-  - `cursor`（query，可选） → `GetFeedRequest.cursor`
-  - 额外 query/header 映射到 `GetFeedRequest.metadata`（Gateway 维护白名单，例如 A/B 实验标签）。
+  - `limit`（query，默认 10，上限 100） → `GetFeedRequest.limit`
 - **响应映射**
   - gRPC 成功 → HTTP 200，Body 直接透传 JSON（由 Gateway 自动转换）。
   - gRPC `codes.Unimplemented`（当前占位）→ HTTP 501。

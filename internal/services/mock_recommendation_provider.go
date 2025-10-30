@@ -5,18 +5,26 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
 	"github.com/go-kratos/kratos/v2/log"
 )
 
 // MockRecommendationProvider 根据本地投影随机返回视频。
 type MockRecommendationProvider struct {
-	repo FeedProjectionRepository
+	repo *repositories.FeedVideoProjectionRepository
 	rng  *rand.Rand
 	log  *log.Helper
 }
 
+const mockRecommendationSource = "mock"
+
+// Source 返回推荐来源标识。
+func (p *MockRecommendationProvider) Source() string {
+	return mockRecommendationSource
+}
+
 // NewMockRecommendationProvider 构造基于投影表的 Mock 推荐实现。
-func NewMockRecommendationProvider(repo FeedProjectionRepository, logger log.Logger) *MockRecommendationProvider {
+func NewMockRecommendationProvider(repo *repositories.FeedVideoProjectionRepository, logger log.Logger) *MockRecommendationProvider {
 	seed := time.Now().UnixNano()
 	return &MockRecommendationProvider{
 		repo: repo,
@@ -43,11 +51,11 @@ func (p *MockRecommendationProvider) GetFeed(ctx context.Context, input Recommen
 			Reason:  "mock.random",
 			Score:   p.rng.Float64(),
 			Metadata: map[string]string{
-				"source": "mock",
+				"source": mockRecommendationSource,
 			},
 		})
 	}
-	return &RecommendationResult{Items: items}, nil
+	return &RecommendationResult{Items: items, Source: mockRecommendationSource}, nil
 }
 
 var _ RecommendationProvider = (*MockRecommendationProvider)(nil)

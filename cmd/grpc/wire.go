@@ -58,12 +58,11 @@ func wireApp(context.Context, configloader.Params) (*kratos.App, func(), error) 
 		grpcserver.ProviderSet, // gRPC Server
 		// grpcclient.ProviderSet, // 暂时不使用, 未来需要调用外部 gRPC 服务时再启用
 		// clients.ProviderSet,    // 暂时不使用, 未来需要调用外部服务时再启用
-		repositories.NewFeedVideoProjectionRepository,
+		repositories.ProviderSet,
 		services.NewMockRecommendationProvider,
 		services.NewFeedService,
-		wire.Bind(new(services.FeedProjectionRepository), new(*repositories.FeedVideoProjectionRepository)),
 		wire.Bind(new(services.RecommendationProvider), new(*services.MockRecommendationProvider)),
-		wire.Bind(new(services.FeedServiceInterface), new(*services.FeedService)),
+		wire.Bind(new(services.RecommendationLogRepository), new(*repositories.FeedRecommendationLogRepository)),
 		controllers.ProviderSet, // 控制器层（gRPC handlers）
 		newApp,                  // 组装 Kratos 应用
 	))

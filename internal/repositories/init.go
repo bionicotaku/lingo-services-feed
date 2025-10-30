@@ -6,4 +6,5 @@ import "github.com/google/wire"
 // 包含所有 Repository 的构造器。
 var ProviderSet = wire.NewSet(
 	NewFeedVideoProjectionRepository,
+	NewFeedRecommendationLogRepository,
 )

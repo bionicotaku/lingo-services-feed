@@ -1,4 +1,4 @@
-# Feed Service Detailed Design (v0.1 · 2025-10-29)
+.  Feed Service Detailed Design (v0.1 · 2025-10-29)
 
 > 本文定义 Feed 微服务的 MVP 架构与落地方案，涵盖职责边界、数据模型、契约、任务流程、非功能指标以及迭代路线。目标是在尽量少的自有状态下，通过 gRPC 向推荐系统获取推荐列表，并依赖 Catalog 事件完成本地补水，向 Gateway 暴露统一的 Feed 接口。
 
@@ -8,7 +8,7 @@
 
 - **核心使命**：为终端用户生成个性化内容列表，对 Feed 层的推荐质量与可用性负责。
 - **职责范围**
-  - 调用推荐系统 gRPC（MVP 暂用随机抽样模拟），根据用户/场景获取排序后的 `video_id` 列表与推荐理由。
+  - 调用推荐系统 gRPC（MVP 暂用随机抽样模拟），根据用户请求获取排序后的 `video_id` 列表与推荐理由。
   - 维护 `feed.videos_projection`，在返回给用户前补全标题、简介、缩略图、时长等展示字段。
   - 暴露 REST/gRPC 接口（经 Gateway 转发），支持游标分页、Problem Details、ETag。
 - **非职责（Post-MVP）**：召回黑名单、兜底策略、曝光回传、缓存加速、实验治理、用户态补水。
@@ -56,6 +56,17 @@ feed.inbox_events
   received_at    timestamptz
   processed_at   timestamptz
   last_error     text
+
+feed.recommendation_logs
+  log_id        uuid primary key default gen_random_uuid()
+  user_id       text
+  request_limit integer not null
+  recommendation_source text not null
+  recommendation_latency_ms integer
+  recommended_items jsonb not null default '[]'::jsonb
+  missing_video_ids jsonb not null default '[]'::jsonb
+  error_kind    text
+  generated_at  timestamptz not null default now()
 ```
 
 > 投影表中的字段与 `services-profile/ARCHITECTURE.md` 描述的 `profile.videos_projection` 一致，确保两个服务在消费 Catalog 事件时保持相同语义；区别仅在于 schema 前缀。MVP 暂不维护用户态投影或近期已推荐。
@@ -64,7 +75,7 @@ feed.inbox_events
 
 | 名称 | 字段 | 描述 |
 | --- | --- | --- |
-| `RecommendationItem` | `VideoID`, `ReasonCode`, `Score`, `Rank`, `NextCursor` | 推荐 gRPC 的原始返回 |
+| `RecommendationItem` | `VideoID`, `Reason`, `Score`, `Metadata` | 推荐模块返回的原始条目 |
 | `VideoCard` | `VideoID`, `Title`, `Description`, `ThumbnailURL`, `DurationMicros`, `ReasonLabel`, `Score`, `VisibilityStatus`, `HLSMasterPlaylist`, `PublishedAt` | 返回给客户端的补水结果 |
 | `FeedResponse` | `Items []VideoCard`, `NextCursor`, `Partial`, `GeneratedAt` | API 响应体 |
 
@@ -104,11 +115,8 @@ service FeedService {
 }
 
 message GetFeedRequest {
-  string user_id = 1;
-  string scene = 2;
-  int32  limit = 3;
-  string cursor = 4;
-  map<string, string> metadata = 5;
+  // 请求条目数量，默认 10，最大 100。
+  int32 limit = 1;
 }
 
 message FeedItem {
@@ -136,7 +144,7 @@ message GetFeedResponse {
 
 ### 5.2 REST `/api/v1/feed`
 
-- **请求参数**：`limit`（默认 20）、`cursor`、`scene`、`Accept-Language`。
+- **请求参数**：`limit`（默认 10，上限 100）。
 - **响应字段**：`items`（结构同 gRPC）、`paging.next_cursor`、`partial`、`generated_at`、`etag`。
 - **Problem Details**（示例类型）：
   - `feed.errors.recommendation_unavailable`（503）—— 推荐 gRPC 超时或失败。
@@ -147,11 +155,11 @@ message GetFeedResponse {
 
 ## 6. 推荐调用与补水流程
 
-1. **Controller**：解析请求 → 校验 `limit`/`scene` → 设定 `ctx` 超时（总 600ms）。
+1. **Controller**：解析请求 → 校验 `limit` → 设定 `ctx` 超时（总 600ms）。
 2. **Service**：
-   - 若配置中启用了真实推荐客户端：调用 gRPC（超时 200ms），传递 `user_id`、`scene`、`limit`、`cursor`，获取 `{video_id, reason_code, score, next_cursor}`。
+   - 若配置中启用了真实推荐客户端：调用 gRPC（超时 200ms），传递 `user_id`、`limit`，获取 `{video_id, reason_code, score, next_cursor}`。
    - 若使用模拟模式：调用 `MockRecommendationProvider.RandomPick(ctx, limit)`，从 `feed.videos_projection` 随机抽取已发布视频，产生默认 `reason_code="mock.random"`、`score=0`、空游标；生成 `recommendation_source="mock"` 日志字段。
-   - 批量读取 `feed.videos_projection`，获取标题、简介、缩略图、时长、可见性、播放清单等。
+   - 批量读取 `feed.videos_projection`，获取标题、简介、缩略图、时长、可见性、播放清单等，并记录推荐日志（原始推荐列表、补水缺失 video_id、耗时等）。
    - 若某些记录缺失或版本落后（事件版本小于当前版本），剔除并标记 `partial=true`，记录缺失数量指标。
    - 调用 `views.ReasonMapper` 将 reason_code 映射为可读标签。
    - 生成 `ETag`（如对 `video_id`+`version` 拼接后 Hash）。
@@ -216,8 +224,8 @@ make run feed-inbox   # 可选：独立运行事件消费者
 
 1. 启动 Supabase PG，并运行 Catalog 事件生产脚本以填充 `feed.videos_projection`（模拟模式无需额外推荐服务）。
 2. 执行 `make run feed`。
-3. `grpcurl -d '{"user_id":"u1","scene":"home","limit":5}' localhost:8082 feed.v1.FeedService/GetFeed`.
-4. `curl -H "Authorization: Bearer <token>" "http://localhost:8080/api/v1/feed?scene=home&limit=5"`.
+3. `grpcurl -d '{"limit":5}' localhost:8082 feed.v1.FeedService/GetFeed`.
+4. `curl -H "Authorization: Bearer <token>" "http://localhost:8080/api/v1/feed?limit=5"`.
 5. 验证响应 `partial=false`、返回条目数与 limit 一致，`reason_code="mock.random"`（默认模拟值）。
 
 ---
@@ -238,16 +246,16 @@ make run feed-inbox   # 可选：独立运行事件消费者
 ## 10. 指标与日志
 
 - **指标**
-  - `feed_recommendation_latency_ms`（Histogram，标签：scene）
-  - `feed_recommendation_fail_total`（Counter，标签：scene，error_kind）
+  - `feed_recommendation_latency_ms`（Histogram，标签：source）
+  - `feed_recommendation_fail_total`（Counter，标签：source，error_kind）
   - `feed_projection_lag_seconds`（Gauge，事件消费延迟）
-  - `feed_partial_response_total`（Counter，标签：scene，reason）
-  - `feed_projection_missing_total`（Counter，标签：scene）
+  - `feed_partial_response_total`（Counter，标签：source）
+  - `feed_projection_missing_total`（Counter，标签：source）
 - **日志字段**
-  - `ts`, `level`, `msg`, `trace_id`, `user_id_hash`, `scene`, `requested`, `returned`, `partial`, `next_cursor`, `recommendation_source`, `missing_ids`。
+  - `ts`, `level`, `msg`, `trace_id`, `user_id_hash`, `request_limit`, `recommendation_source`, `recommendation_latency_ms`, `missing_video_ids_count`。
 - **Trace**
   - 主 span：`Feed.GetFeed`；子 span：`Recommendation.GetFeed`、`VideosProjection.BatchGet`。
-  - Attributes：`scene`, `limit`, `returned`, `partial`, `missing_ids_count`.
+  - Attributes：`limit`, `returned`, `partial`, `missing_video_ids_count`, `recommendation_source`
 
 ---
 
@@ -260,7 +268,7 @@ make run feed-inbox   # 可选：独立运行事件消费者
 | 数据漂移 | Catalog schema 更新未同步 | 依赖 protobuf；禁止复用 tag；升级前同步契约 |
 | 消费中断 | Inbox 异常堆积 | 指标告警；提供重放脚本；任务支持断点续跑 |
 | 性能瓶颈 | 投影批量查询慢 | Prepared statement、批量查询；后续引入缓存层 |
-| 需求扩散 | 场景差异大 | gRPC 请求包含 `scene`；在 Feed 内做特定场景适配 |
+| 需求扩散 | 需要支持多种推荐场景 | 后续若确有需求再扩展请求参数并版本化 proto |
 
 ---
 
@@ -280,7 +288,7 @@ make run feed-inbox   # 可选：独立运行事件消费者
 
 ## 13. MVP 完成定义
 
-- `/api/v1/feed` 可返回补水后的推荐列表，默认 limit=20，支持 cursor。
+- `/api/v1/feed` 可返回补水后的推荐列表，默认 limit=10，后续按需扩展 cursor 支持。
 - 投影消费正常运行，事件滞后 < 5 秒。
 - 推荐调用、投影补水、响应输出均有日志与指标覆盖。
 - `make run feed` + 提供的验证脚本可完成端到端 smoke test。

@@ -56,7 +56,7 @@
 
 ## 4. 推荐客户端与 Mock Provider
 - [ ] **4.1 抽象 RecommendationProvider**  
-  - [ ] 在 `internal/services` 新建接口（`GetFeed(ctx, userID, scene, limit, cursor)`）、数据结构与错误类型。  
+  - [ ] 在 `internal/services` 新建接口（`GetFeed(ctx, userID, limit)`）、数据结构与错误类型。  
   - [ ] 提供 Wire 绑定声明。
 - [ ] **4.2 Mock 推荐实现**  
   - [x] 基于 `feed.videos_projection` 随机抽样，附带 `mock.random` reason，支持 deterministic seed。  
@@ -107,7 +107,7 @@
 
 ## 8. 观测、日志与告警
 - [ ] **8.1 日志规范**  
-  - [ ] 默认字段：`service=feed`、`scene`、`recommendation_source`、`returned_count`、`partial`、`missing_ids_hash`。  
+  - [ ] 默认字段：`service=feed`、`request_limit`、`recommendation_source`、`recommendation_latency_ms`、`missing_video_ids_count`。  
   - [ ] 用户标识使用哈希/脱敏。  
   - [ ] 如需新增字段更新 `lingo-utils/gclog` 初始化。
 - [ ] **8.2 指标落地**  
@@ -115,7 +115,7 @@
   - [ ] 使用 OTel Meter，编写测试验证标签与单位。
 - [ ] **8.3 Trace**  
   - [ ] 主 Span：`Feed.GetFeed`；子 Span：`Recommendation.GetFeed`、`Projection.BatchGet`。  
-  - [ ] Attributes：`scene`、`limit`、`returned`、`partial`、`recommendation_source`。
+  - [ ] Attributes：`limit`、`returned`、`partial`、`recommendation_source`、`missing_video_ids_count`。
 
 ## 9. 测试体系
 - [ ] **9.1 单元测试**  
