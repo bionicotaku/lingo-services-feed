@@ -22,7 +22,7 @@ func newInboxMetrics() *inboxMetrics {
 	if meterProvider == nil {
 		meterProvider = noopmetric.NewMeterProvider()
 	}
-	meter := meterProvider.Meter("lingo-services-profile.catalog_inbox")
+	meter := meterProvider.Meter("lingo-services-feed.catalog_inbox")
 
 	success, err := meter.Int64Counter("catalog_inbox_success_total", metric.WithDescription("Number of catalog projection events applied"))
 	if err != nil {

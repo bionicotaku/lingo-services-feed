@@ -1,6 +1,6 @@
 # Feed 服务重构 TODO（模板代码 → MVP 实现）
 
-> 目标：完全对齐 `services-feed/ARCHITECTURE.md`，将当前 Profile 模板替换为 Feed 业务实现，仅对外提供 gRPC 接口（HTTP 由 Gateway 反向代理）。所有阶段必须在 `make fmt && make lint && make test` 通过后才能推进下一阶段。
+> 目标：完全对齐 `services-feed/ARCHITECTURE.md`，将当前模板服务替换为 Feed 业务实现，仅对外提供 gRPC 接口（HTTP 由 Gateway 反向代理）。所有阶段必须在 `make fmt && make lint && make test` 通过后才能推进下一阶段。
 
 ## 0. 准备与基线
 - [ ] **0.1 阅读上下文**  
@@ -9,9 +9,9 @@
 - [ ] **0.2 建立工作分支与追踪**  
   - [ ] 创建本地分支 `feat/feed-mvp` 并同步项目看板。  
   - [ ] 输出：拆解任务负责人、目标完成时间。
-- [ ] **0.3 清理模板遗留**  
-  - [ ] 移除/归档 Profile 相关脚本与文档引用。  
-  - [ ] 确保目录内无多余生成文件或无用二进制。
+- [x] **0.3 清理模板遗留**  
+  - [x] 移除/归档历史模板脚本与文档引用，删除所有遗留描述。  
+  - [x] 确保目录内无多余生成文件或无用二进制。
 
 ## 1. 模块与配置重命名
 - [ ] **1.1 调整 Go Module 与依赖**  
@@ -25,13 +25,13 @@
   - [x] 验证：`go test ./internal/infrastructure/configloader`.
 - [x] **1.3 Wire 依赖清洗**  
   - [x] 为 Feed 服务新增 `NewFeedService`、`NewFeedHandler` 占位实现，保持“先新增后删除”。  
-  - [x] 更新 `cmd/grpc/wire.go` 绑定 Feed/Repository 接口，保留旧 Profile Handler 以便兼容。  
+  - [x] 更新 `cmd/grpc/wire.go` 绑定 Feed/Repository 接口，并在验证稳定后移除遗留 Handler。  
   - [x] 调整 `grpc_server.NewGRPCServer` 注册 Feed gRPC 服务，并重新执行 `wire ./cmd/grpc`、`go build ./cmd/grpc` 验证。
 
 ## 2. 契约定义（gRPC）
 - [x] **2.1 设计 feed.v1 Proto**  
   - [x] 新建 `api/feed/v1/feed.proto`（GetFeed、FeedItem、MissingProjection 等结构）。  
-  - [x] 暂保留旧 `api/profile/v1`，待新 Handler 接入后统一回收。  
+  - [x] 清理旧 `api/profile/v1` 目录，统一指向 Feed 契约。  
   - [x] 运行 `buf lint && buf generate`，生成 `feed.pb.go`/`feed_grpc.pb.go`。  
   - [x] 生成代码通过 `go test ./...`、`revive`、`staticcheck` 后续统一校验。
 - [x] **2.2 Gateway 协调**  
@@ -48,7 +48,7 @@
   - [x] 更新 `sqlc.yaml`，生成 `internal/repositories/feeddb` 代码；执行 `sqlc generate`。  
   - [x] 编写 Feed 投影/Inbox/日志仓储集成测试覆盖核心 DAO。
 - [ ] **3.3 Repository 实现**  
-  - [x] 新增 Feed 专用仓储：`FeedVideoProjectionRepository`、`FeedInboxRepository`、`FeedRecommendationLogRepository`（保持 Profile 仓储暂存）。  
+  - [x] 新增 Feed 专用仓储：`FeedVideoProjectionRepository`、`FeedInboxRepository`、`FeedRecommendationLogRepository`，完全替换模板仓储。  
   - [x] 编写集成测试验证写入/读取流程；日志指标细节留待业务落地。
 - [x] **3.4 事务与连接池配置**  
   - [x] 更新 `config.yaml` 中默认 schema、Feature Flag。  
@@ -86,7 +86,7 @@
 - [ ] **6.1 gRPC Handler**  
   - [ ] 新建 `internal/controllers/feed_handler.go` 实现 `feed.v1.FeedServiceServer`。  
   - [ ] 解析参数与 Metadata、注入上下文、处理 Idempotency-Key、生成 gRPC 响应。  
-  - [ ] 在新 Handler 完整上线并通过测试后，再删除 Profile Handler 及其 Wire 绑定。  
+  - [ ] 在新 Handler 完整上线并通过测试后，再删除遗留 Handler 及其 Wire 绑定。  
   - [ ] 单测覆盖：参数校验、推荐错误、partial、ETag。
 - [ ] **6.2 认证与鉴权**  
   - [ ] 调整 JWT 中间件，解析用户身份（匿名策略根据业务确认）。  
@@ -98,7 +98,7 @@
   - [ ] 处理版本校验、幂等策略、指标与日志。  
   - [ ] Testcontainers 集成测试模拟 `catalog.video.*` 事件流。
 - [ ] **7.2 Outbox Runner（可选）**  
-  - [ ] 若 Feed MVP 不发布事件，直接删除 Profile Outbox 相关代码、配置与任务。  
+  - [ ] 若 Feed MVP 不发布事件，直接删除遗留 Outbox 代码、配置与任务。  
   - [ ] 如需后续扩展曝光/点击事件，再新增 Feed Outbox 设计与实现。
 - [ ] **7.3 Makefile 任务**  
   - [ ] `make run feed`：启动 gRPC 服务。  

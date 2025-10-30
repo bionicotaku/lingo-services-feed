@@ -1,8 +1,10 @@
+// Package mappers 提供数据库行与领域模型之间的转换工具。
 package mappers
 
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/bionicotaku/lingo-services-feed/internal/models/po"
 	feeddb "github.com/bionicotaku/lingo-services-feed/internal/repositories/feeddb"
@@ -72,6 +74,30 @@ func ToPgInt4(value *int32) pgtype.Int4 {
 	return pgtype.Int4{Int32: *value, Valid: true}
 }
 
+// ToPgInt8 将 *int64 转换为 pgtype.Int8。
+func ToPgInt8(value *int64) pgtype.Int8 {
+	if value == nil {
+		return pgtype.Int8{}
+	}
+	return pgtype.Int8{Int64: *value, Valid: true}
+}
+
+// ToPgText 将 *string 转换为 pgtype.Text。
+func ToPgText(value *string) pgtype.Text {
+	if value == nil {
+		return pgtype.Text{}
+	}
+	return pgtype.Text{String: *value, Valid: true}
+}
+
+// ToPgTimestamptzPtr 将 *time.Time 转换为 pgtype.Timestamptz。
+func ToPgTimestamptzPtr(value *time.Time) pgtype.Timestamptz {
+	if value == nil {
+		return pgtype.Timestamptz{}
+	}
+	return pgtype.Timestamptz{Time: value.UTC(), Valid: true}
+}
+
 func int4Ptr(value pgtype.Int4) *int32 {
 	if !value.Valid {
 		return nil
@@ -84,4 +110,26 @@ func toInt64Ptr(value pgtype.Int8) *int64 {
 		return nil
 	}
 	return &value.Int64
+}
+
+func textPtr(value pgtype.Text) *string {
+	if !value.Valid {
+		return nil
+	}
+	return &value.String
+}
+
+func timestampPtr(value pgtype.Timestamptz) *time.Time {
+	if !value.Valid {
+		return nil
+	}
+	t := value.Time.UTC()
+	return &t
+}
+
+func mustTimestamp(value pgtype.Timestamptz) time.Time {
+	if !value.Valid {
+		return time.Time{}
+	}
+	return value.Time.UTC()
 }

@@ -1,5 +1,5 @@
 // Package main 提供 Catalog Inbox Runner 的独立入口，负责消费 catalog.video.* 事件
-// 并维护 profile.videos_projection 投影表。
+// 并维护 feed.videos_projection 投影表。
 package main
 
 import (

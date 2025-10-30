@@ -13,14 +13,12 @@ import (
 	"github.com/bionicotaku/lingo-services-feed/internal/infrastructure/grpc_server"
 	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
 	"github.com/bionicotaku/lingo-services-feed/internal/services"
-	"github.com/bionicotaku/lingo-services-feed/internal/tasks/outbox"
 	"github.com/bionicotaku/lingo-utils/gcjwt"
 	"github.com/bionicotaku/lingo-utils/gclog"
-	"github.com/bionicotaku/lingo-utils/gcpubsub"
 	"github.com/bionicotaku/lingo-utils/observability"
 	"github.com/bionicotaku/lingo-utils/pgxpoolx"
-	"github.com/bionicotaku/lingo-utils/txmanager"
 	"github.com/go-kratos/kratos/v2"
+	"github.com/google/wire"
 )
 
 import (
@@ -90,51 +88,16 @@ func wireApp(contextContext context.Context, params configloader.Params) (*krato
 	handlerTimeouts := configloader.ProvideHandlerTimeouts(runtimeConfig)
 	baseHandler := controllers.NewBaseHandler(handlerTimeouts)
 	feedHandler := controllers.NewFeedHandler(feedService, baseHandler, logger)
-	profileUsersRepository := repositories.NewProfileUsersRepository(pool, logger)
-	txmanagerConfig := configloader.ProvideTxConfig(runtimeConfig)
-	txmanagerComponent, cleanup5, err := txmanager.NewComponent(txmanagerConfig, pool, logger)
-	if err != nil {
-		cleanup4()
-		cleanup3()
-		cleanup2()
-		cleanup()
-		return nil, nil, err
-	}
-	manager := txmanager.ProvideManager(txmanagerComponent)
-	profileService := services.NewProfileService(profileUsersRepository, manager, logger)
-	profileEngagementsRepository := repositories.NewProfileEngagementsRepository(pool, logger)
-	profileVideoStatsRepository := repositories.NewProfileVideoStatsRepository(pool, logger)
-	messagingConfig := configloader.ProvideMessagingConfig(runtimeConfig)
-	configConfig := configloader.ProvideOutboxConfig(messagingConfig)
-	outboxRepository := repositories.NewOutboxRepository(pool, logger, configConfig)
-	engagementService := services.NewEngagementService(profileEngagementsRepository, profileVideoStatsRepository, outboxRepository, manager, logger)
-	profileWatchLogsRepository := repositories.NewProfileWatchLogsRepository(pool, logger)
-	watchHistoryService := services.NewWatchHistoryService(profileWatchLogsRepository, profileVideoStatsRepository, outboxRepository, manager, logger)
-	profileVideoProjectionRepository := repositories.NewProfileVideoProjectionRepository(pool, logger)
-	videoProjectionService := services.NewVideoProjectionService(profileVideoProjectionRepository, logger)
-	videoStatsService := services.NewVideoStatsService(profileVideoStatsRepository, logger)
-	profileHandler := controllers.NewProfileHandler(profileService, engagementService, watchHistoryService, videoProjectionService, videoStatsService, baseHandler)
-	server := grpcserver.NewGRPCServer(serverConfig, metricsConfig, serverMiddleware, feedHandler, profileHandler, logger)
-	gcpubsubConfig := configloader.ProvidePubSubConfig(messagingConfig)
-	dependencies := configloader.ProvidePubSubDependencies(logger)
-	gcpubsubComponent, cleanup6, err := gcpubsub.NewComponent(contextContext, gcpubsubConfig, dependencies)
-	if err != nil {
-		cleanup5()
-		cleanup4()
-		cleanup3()
-		cleanup2()
-		cleanup()
-		return nil, nil, err
-	}
-	publisher := gcpubsub.ProvidePublisher(gcpubsubComponent)
-	runner := outbox.ProvideRunner(outboxRepository, publisher, gcpubsubConfig, configConfig, logger)
-	app := newApp(observabilityComponent, logger, server, serviceInfo, runner)
+	server := grpcserver.NewGRPCServer(serverConfig, metricsConfig, serverMiddleware, feedHandler, logger)
+	app := newApp(observabilityComponent, logger, server, serviceInfo)
 	return app, func() {
-		cleanup6()
-		cleanup5()
 		cleanup4()
 		cleanup3()
 		cleanup2()
 		cleanup()
 	}, nil
 }
+
+// wire.go:
+
+var feedConfigSet = wire.NewSet(configloader.LoadRuntimeConfig, configloader.ProvideServiceInfo, configloader.ProvideLoggerConfig, configloader.ProvideObservabilityConfig, configloader.ProvideObservabilityInfo, configloader.ProvideServerConfig, configloader.ProvideHandlerTimeouts, configloader.ProvideDatabaseConfig, configloader.ProvidePgxConfig, configloader.ProvideTxConfig, configloader.ProvideJWTConfig)

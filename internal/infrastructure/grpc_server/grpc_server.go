@@ -4,7 +4,6 @@ package grpcserver
 
 import (
 	feedv1 "github.com/bionicotaku/lingo-services-feed/api/feed/v1"
-	profilev1 "github.com/bionicotaku/lingo-services-feed/api/profile/v1"
 	"github.com/bionicotaku/lingo-services-feed/internal/controllers"
 	configloader "github.com/bionicotaku/lingo-services-feed/internal/infrastructure/configloader"
 
@@ -44,7 +43,6 @@ func NewGRPCServer(
 	metricsCfg *observability.MetricsConfig,
 	jwt gcjwt.ServerMiddleware,
 	feed *controllers.FeedHandler,
-	profile *controllers.ProfileHandler,
 	logger log.Logger,
 ) *grpc.Server {
 	// metricsCfg 为可选参数，默认启用指标采集以保持向后兼容。
@@ -92,9 +90,6 @@ func NewGRPCServer(
 	srv := grpc.NewServer(opts...)
 	if feed != nil {
 		feedv1.RegisterFeedServiceServer(srv, feed)
-	}
-	if profile != nil {
-		profilev1.RegisterProfileServiceServer(srv, profile)
 	}
 	return srv
 }

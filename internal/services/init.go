@@ -9,9 +9,4 @@ import "github.com/google/wire"
 var ProviderSet = wire.NewSet(
 	NewMockRecommendationProvider,
 	NewFeedService,
-	NewProfileService,
-	NewEngagementService,
-	NewWatchHistoryService,
-	NewVideoProjectionService,
-	NewVideoStatsService,
 )

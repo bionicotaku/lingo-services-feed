@@ -1,3 +1,4 @@
+// Package po 定义 Feed 服务的数据持久化结构体。
 package po
 
 import "time"

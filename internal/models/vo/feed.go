@@ -1,3 +1,4 @@
+// Package vo 定义向上层返回的 Feed 视图对象。
 package vo
 
 import "time"

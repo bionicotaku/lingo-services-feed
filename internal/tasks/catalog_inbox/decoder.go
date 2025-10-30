@@ -1,4 +1,4 @@
-// Package cataloginbox provides Catalog Inbox runners that hydrate profile video projections.
+// Package cataloginbox 提供补水 feed 视频投影的 Catalog Inbox Runner。
 package cataloginbox
 
 import (

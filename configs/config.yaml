@@ -175,6 +175,4 @@ features:
   enable_feed_api: true
   # 推荐服务 mock 切换（true 表示走本地投影随机推荐）
   enable_mock_recommender: true
-  # 兼容旧 Profile 模板（待回收）
-  enable_profile_api: false
   enable_legacy_catalog_api: false

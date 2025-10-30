@@ -22,7 +22,7 @@ type Task struct {
 func NewTask(
 	subscriber gcpubsub.Subscriber,
 	inboxRepo *repositories.InboxRepository,
-	projection *repositories.ProfileVideoProjectionRepository,
+	projection *repositories.FeedVideoProjectionRepository,
 	tx txmanager.Manager,
 	logger log.Logger,
 	cfg outboxcfg.InboxConfig,

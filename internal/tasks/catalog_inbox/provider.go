@@ -12,7 +12,7 @@ import (
 func ProvideTask(
 	subscriber gcpubsub.Subscriber,
 	inboxRepo *repositories.InboxRepository,
-	projectionRepo *repositories.ProfileVideoProjectionRepository,
+	projectionRepo *repositories.FeedVideoProjectionRepository,
 	tx txmanager.Manager,
 	cfg outboxcfg.Config,
 	logger log.Logger,

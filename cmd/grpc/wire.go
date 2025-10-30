@@ -15,16 +15,27 @@ import (
 	grpcserver "github.com/bionicotaku/lingo-services-feed/internal/infrastructure/grpc_server"
 	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
 	"github.com/bionicotaku/lingo-services-feed/internal/services"
-	outboxtasks "github.com/bionicotaku/lingo-services-feed/internal/tasks/outbox"
 
 	"github.com/bionicotaku/lingo-utils/gcjwt"
 	"github.com/bionicotaku/lingo-utils/gclog"
-	"github.com/bionicotaku/lingo-utils/gcpubsub"
 	obswire "github.com/bionicotaku/lingo-utils/observability"
 	"github.com/bionicotaku/lingo-utils/pgxpoolx"
-	"github.com/bionicotaku/lingo-utils/txmanager"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/google/wire"
+)
+
+var feedConfigSet = wire.NewSet(
+	configloader.LoadRuntimeConfig,
+	configloader.ProvideServiceInfo,
+	configloader.ProvideLoggerConfig,
+	configloader.ProvideObservabilityConfig,
+	configloader.ProvideObservabilityInfo,
+	configloader.ProvideServerConfig,
+	configloader.ProvideHandlerTimeouts,
+	configloader.ProvideDatabaseConfig,
+	configloader.ProvidePgxConfig,
+	configloader.ProvideTxConfig,
+	configloader.ProvideJWTConfig,
 )
 
 // wireApp 构建整个 Kratos 应用，分阶段装配依赖。
@@ -39,37 +50,22 @@ import (
 //  5. 应用: newApp 创建 Kratos App
 func wireApp(context.Context, configloader.Params) (*kratos.App, func(), error) {
 	panic(wire.Build(
-		configloader.ProviderSet, // 配置加载与解析
-		gclog.ProviderSet,        // 结构化日志
-		gcjwt.ProviderSet,        // JWT 认证中间件
-		obswire.ProviderSet,      // OpenTelemetry 追踪和指标
-		pgxpoolx.ProviderSet,     // PostgreSQL 连接池
-		txmanager.ProviderSet,    // 事务管理器
-		gcpubsub.ProviderSet,     // Pub/Sub 发布与订阅
-		grpcserver.ProviderSet,   // gRPC Server
+		feedConfigSet,
+		gclog.ProviderSet,      // 结构化日志
+		gcjwt.ProviderSet,      // JWT 认证中间件
+		obswire.ProviderSet,    // OpenTelemetry 追踪和指标
+		pgxpoolx.ProviderSet,   // PostgreSQL 连接池
+		grpcserver.ProviderSet, // gRPC Server
 		// grpcclient.ProviderSet, // 暂时不使用, 未来需要调用外部 gRPC 服务时再启用
 		// clients.ProviderSet,    // 暂时不使用, 未来需要调用外部服务时再启用
-		repositories.ProviderSet, // 数据访问层（sqlc）
-		services.ProviderSet,     // 业务逻辑层
-		wire.Bind(new(services.OutboxEnqueuer), new(*repositories.OutboxRepository)),
-		wire.Bind(new(services.ProfileUsersRepository), new(*repositories.ProfileUsersRepository)),
-		wire.Bind(new(services.EngagementsRepository), new(*repositories.ProfileEngagementsRepository)),
-		wire.Bind(new(services.EngagementStatsRepository), new(*repositories.ProfileVideoStatsRepository)),
-		wire.Bind(new(services.WatchLogsRepository), new(*repositories.ProfileWatchLogsRepository)),
-	wire.Bind(new(services.WatchStatsRepository), new(*repositories.ProfileVideoStatsRepository)),
-	wire.Bind(new(services.VideoProjectionRepository), new(*repositories.ProfileVideoProjectionRepository)),
-	wire.Bind(new(services.VideoStatsRepository), new(*repositories.ProfileVideoStatsRepository)),
-	wire.Bind(new(services.FeedProjectionRepository), new(*repositories.FeedVideoProjectionRepository)),
-	wire.Bind(new(services.RecommendationProvider), new(*services.MockRecommendationProvider)),
-	wire.Bind(new(services.FeedServiceInterface), new(*services.FeedService)),
-		wire.Bind(new(services.ProfileServiceInterface), new(*services.ProfileService)),
-		wire.Bind(new(services.EngagementServiceInterface), new(*services.EngagementService)),
-		wire.Bind(new(services.WatchHistoryServiceInterface), new(*services.WatchHistoryService)),
-		wire.Bind(new(services.VideoProjectionServiceInterface), new(*services.VideoProjectionService)),
-		wire.Bind(new(services.VideoStatsServiceInterface), new(*services.VideoStatsService)),
+		repositories.NewFeedVideoProjectionRepository,
+		services.NewMockRecommendationProvider,
+		services.NewFeedService,
+		wire.Bind(new(services.FeedProjectionRepository), new(*repositories.FeedVideoProjectionRepository)),
+		wire.Bind(new(services.RecommendationProvider), new(*services.MockRecommendationProvider)),
+		wire.Bind(new(services.FeedServiceInterface), new(*services.FeedService)),
 		controllers.ProviderSet, // 控制器层（gRPC handlers）
-		outboxtasks.ProvideRunner,
-		newApp, // 组装 Kratos 应用
+		newApp,                  // 组装 Kratos 应用
 	))
 }
 

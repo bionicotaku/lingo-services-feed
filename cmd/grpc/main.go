@@ -4,13 +4,10 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
-	"sync"
 
 	configloader "github.com/bionicotaku/lingo-services-feed/internal/infrastructure/configloader"
 	obswire "github.com/bionicotaku/lingo-utils/observability"
-	outboxpublisher "github.com/bionicotaku/lingo-utils/outbox/publisher"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
@@ -32,7 +29,6 @@ func newApp(
 	logger log.Logger,
 	gs *grpc.Server,
 	meta configloader.ServiceInfo,
-	publisher *outboxpublisher.Runner,
 ) *kratos.App {
 	options := []kratos.Option{
 		kratos.ID(meta.InstanceID),
@@ -42,60 +38,6 @@ func newApp(
 		kratos.Logger(logger),
 		kratos.Server(gs),
 	}
-
-	type worker struct {
-		name string
-		run  func(context.Context) error
-	}
-
-	var workers []worker
-	if publisher != nil {
-		workers = append(workers, worker{name: "outbox publisher", run: publisher.Run})
-	}
-	if len(workers) > 0 {
-		var (
-			wg      sync.WaitGroup
-			cancels []context.CancelFunc
-		)
-		helper := log.NewHelper(logger)
-
-		options = append(options,
-			kratos.BeforeStart(func(ctx context.Context) error {
-				cancels = make([]context.CancelFunc, len(workers))
-				for i := range workers {
-					runCtx, cancel := context.WithCancel(ctx)
-					cancels[i] = cancel
-					wg.Add(1)
-					worker := workers[i]
-					go func() {
-						defer wg.Done()
-						if err := worker.run(runCtx); err != nil && !errors.Is(err, context.Canceled) {
-							helper.Warnf("%s stopped: %v", worker.name, err)
-						}
-					}()
-				}
-				return nil
-			}),
-			kratos.AfterStop(func(ctx context.Context) error {
-				for _, cancel := range cancels {
-					if cancel != nil {
-						cancel()
-					}
-				}
-				done := make(chan struct{})
-				go func() {
-					wg.Wait()
-					close(done)
-				}()
-				select {
-				case <-ctx.Done():
-				case <-done:
-				}
-				return nil
-			}),
-		)
-	}
-
 	return kratos.New(options...)
 }
 

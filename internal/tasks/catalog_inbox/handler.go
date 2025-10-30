@@ -17,13 +17,13 @@ import (
 )
 
 type eventHandler struct {
-	projections *repositories.ProfileVideoProjectionRepository
+	projections *repositories.FeedVideoProjectionRepository
 	log         *log.Helper
 	metrics     *inboxMetrics
 	clock       func() time.Time
 }
 
-func newEventHandler(repo *repositories.ProfileVideoProjectionRepository, logger log.Logger, metrics *inboxMetrics) *eventHandler {
+func newEventHandler(repo *repositories.FeedVideoProjectionRepository, logger log.Logger, metrics *inboxMetrics) *eventHandler {
 	return &eventHandler{
 		projections: repo,
 		log:         log.NewHelper(logger),
@@ -94,7 +94,7 @@ func (h *eventHandler) handleCreated(ctx context.Context, sess txmanager.Session
 	}
 
 	version := eventVersion(evt.GetVersion(), payload.GetVersion())
-	input := repositories.UpsertVideoProjectionInput{
+	input := repositories.UpsertFeedVideoProjectionInput{
 		VideoID:           videoID,
 		Title:             defaultTitle(payload.GetTitle()),
 		Description:       cloneString(payload.Description),
@@ -140,7 +140,7 @@ func (h *eventHandler) handleUpdated(ctx context.Context, sess txmanager.Session
 		title = payload.GetTitle()
 	}
 
-	input := repositories.UpsertVideoProjectionInput{
+	input := repositories.UpsertFeedVideoProjectionInput{
 		VideoID:           videoID,
 		Title:             defaultTitle(title),
 		Description:       coalesceString(payload.Description, current.Description),
@@ -183,7 +183,7 @@ func (h *eventHandler) handleMediaReady(ctx context.Context, sess txmanager.Sess
 
 	statusPtr := optionalStringPtr(payload.GetStatus())
 
-	input := repositories.UpsertVideoProjectionInput{
+	input := repositories.UpsertFeedVideoProjectionInput{
 		VideoID:           videoID,
 		Title:             defaultTitle(current.Title),
 		Description:       current.Description,
@@ -226,7 +226,7 @@ func (h *eventHandler) handleVisibilityChanged(ctx context.Context, sess txmanag
 
 	statusPtr := optionalStringPtr(payload.GetStatus())
 
-	input := repositories.UpsertVideoProjectionInput{
+	input := repositories.UpsertFeedVideoProjectionInput{
 		VideoID:           videoID,
 		Title:             defaultTitle(current.Title),
 		Description:       current.Description,
@@ -265,7 +265,7 @@ func (h *eventHandler) handleDeleted(ctx context.Context, sess txmanager.Session
 	}
 
 	statusDeleted := "deleted"
-	input := repositories.UpsertVideoProjectionInput{
+	input := repositories.UpsertFeedVideoProjectionInput{
 		VideoID:           videoID,
 		Title:             defaultTitle(current.Title),
 		Description:       current.Description,
@@ -285,7 +285,7 @@ func (h *eventHandler) handleDeleted(ctx context.Context, sess txmanager.Session
 	return nil
 }
 
-func (h *eventHandler) loadCurrent(ctx context.Context, sess txmanager.Session, videoID uuid.UUID) (*po.ProfileVideoProjection, error) {
+func (h *eventHandler) loadCurrent(ctx context.Context, sess txmanager.Session, videoID uuid.UUID) (*po.FeedVideoProjection, error) {
 	record, err := h.projections.Get(ctx, sess, videoID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

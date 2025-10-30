@@ -25,7 +25,7 @@ import (
 
 var catalogInboxRepoSet = wire.NewSet(
 	repositories.NewInboxRepository,
-	repositories.NewProfileVideoProjectionRepository,
+	repositories.NewFeedVideoProjectionRepository,
 )
 
 func wireCatalogInboxTask(context.Context, configloader.Params) (*catalogInboxApp, func(), error) {

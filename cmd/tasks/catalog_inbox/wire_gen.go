@@ -9,7 +9,6 @@ package main
 import (
 	"context"
 	"fmt"
-
 	"github.com/bionicotaku/lingo-services-feed/internal/infrastructure/configloader"
 	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
 	"github.com/bionicotaku/lingo-services-feed/internal/tasks/catalog_inbox"
@@ -65,7 +64,7 @@ func wireCatalogInboxTask(contextContext context.Context, params configloader.Pa
 	pool := pgxpoolx.ProvidePool(pgxpoolxComponent)
 	configConfig := configloader.ProvideOutboxConfig(messagingConfig)
 	inboxRepository := repositories.NewInboxRepository(pool, logger, configConfig)
-	profileVideoProjectionRepository := repositories.NewProfileVideoProjectionRepository(pool, logger)
+	feedVideoProjectionRepository := repositories.NewFeedVideoProjectionRepository(pool, logger)
 	txmanagerConfig := configloader.ProvideTxConfig(runtimeConfig)
 	txmanagerComponent, cleanup5, err := txmanager.NewComponent(txmanagerConfig, pool, logger)
 	if err != nil {
@@ -76,7 +75,7 @@ func wireCatalogInboxTask(contextContext context.Context, params configloader.Pa
 		return nil, nil, err
 	}
 	manager := txmanager.ProvideManager(txmanagerComponent)
-	task := cataloginbox.ProvideTask(subscriber, inboxRepository, profileVideoProjectionRepository, manager, configConfig, logger)
+	task := cataloginbox.ProvideTask(subscriber, inboxRepository, feedVideoProjectionRepository, manager, configConfig, logger)
 	mainCatalogInboxApp, err := newCatalogInboxApp(observabilityComponent, logger, task)
 	if err != nil {
 		cleanup5()
@@ -97,7 +96,7 @@ func wireCatalogInboxTask(contextContext context.Context, params configloader.Pa
 
 // wire.go:
 
-var catalogInboxRepoSet = wire.NewSet(repositories.NewInboxRepository, repositories.NewProfileVideoProjectionRepository)
+var catalogInboxRepoSet = wire.NewSet(repositories.NewInboxRepository, repositories.NewFeedVideoProjectionRepository)
 
 func newCatalogInboxApp(_ *observability.Component, logger log.Logger, task *cataloginbox.Task) (*catalogInboxApp, error) {
 	if task == nil {

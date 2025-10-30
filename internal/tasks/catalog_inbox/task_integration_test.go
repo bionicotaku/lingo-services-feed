@@ -40,8 +40,8 @@ func TestCatalogInboxTask_UpsertsProjection(t *testing.T) {
 	applyMigrations(ctx, t, pool)
 
 	logger := log.NewStdLogger(io.Discard)
-	inboxRepo := repositories.NewInboxRepository(pool, logger, outboxcfg.Config{Schema: "profile"})
-	projectionRepo := repositories.NewProfileVideoProjectionRepository(pool, logger)
+	inboxRepo := repositories.NewInboxRepository(pool, logger, outboxcfg.Config{Schema: "feed"})
+	projectionRepo := repositories.NewFeedVideoProjectionRepository(pool, logger)
 	manager, err := txmanager.NewManager(pool, txmanager.Config{}, txmanager.Dependencies{Logger: logger})
 	require.NoError(t, err)
 
@@ -67,7 +67,7 @@ func TestCatalogInboxTask_UpsertsProjection(t *testing.T) {
 	msg := buildMessage(t, event)
 	stub := &stubSubscriber{messages: []*gcpubsub.Message{msg}}
 
-	cfg := outboxcfg.Config{Schema: "profile", Inbox: outboxcfg.InboxConfig{SourceService: "catalog", MaxConcurrency: 1}}
+	cfg := outboxcfg.Config{Schema: "feed", Inbox: outboxcfg.InboxConfig{SourceService: "catalog", MaxConcurrency: 1}}
 	task := cataloginbox.NewTask(stub, inboxRepo, projectionRepo, manager, logger, cfg.Inbox)
 	require.NotNil(t, task)
 
@@ -175,10 +175,10 @@ func startPostgres(ctx context.Context, t *testing.T) (string, func()) {
 		Env: map[string]string{
 			"POSTGRES_PASSWORD": "postgres",
 			"POSTGRES_USER":     "postgres",
-			"POSTGRES_DB":       "profile",
+			"POSTGRES_DB":       "feed",
 		},
 		WaitingFor: wait.ForSQL("5432/tcp", "postgres", func(host string, port nat.Port) string {
-			return fmt.Sprintf("postgres://postgres:postgres@%s:%s/profile?sslmode=disable", host, port.Port())
+			return fmt.Sprintf("postgres://postgres:postgres@%s:%s/feed?sslmode=disable", host, port.Port())
 		}).WithStartupTimeout(60 * time.Second),
 	}
 
@@ -196,7 +196,7 @@ func startPostgres(ctx context.Context, t *testing.T) (string, func()) {
 	port, err := container.MappedPort(ctx, "5432")
 	require.NoError(t, err)
 
-	dsn := fmt.Sprintf("postgres://postgres:postgres@%s:%s/profile?sslmode=disable", host, port.Port())
+	dsn := fmt.Sprintf("postgres://postgres:postgres@%s:%s/feed?sslmode=disable", host, port.Port())
 	cleanup := func() {
 		termCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()

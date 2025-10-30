@@ -118,8 +118,6 @@ func (r *FeedVideoProjectionRepository) ListRandomIDs(ctx context.Context, sess 
 		return nil, fmt.Errorf("list random feed video ids: %w", err)
 	}
 	ids := make([]uuid.UUID, len(rows))
-	for i, id := range rows {
-		ids[i] = id
-	}
+	copy(ids, rows)
 	return ids, nil
 }
