@@ -36,13 +36,21 @@ func (r *FeedRecommendationLogRepository) Insert(ctx context.Context, sess txman
 	if sess != nil {
 		queries = queries.WithTx(sess.Tx())
 	}
-	missing := logEntry.MissingIDs
+	recommended := logEntry.RecommendedItems
+	if recommended == nil {
+		recommended = []po.RecommendedItemLog{}
+	}
+	recommendedPayload, err := json.Marshal(recommended)
+	if err != nil {
+		return fmt.Errorf("marshal recommended_items: %w", err)
+	}
+	missing := logEntry.MissingVideoIDs
 	if missing == nil {
 		missing = []string{}
 	}
-	payload, err := json.Marshal(missing)
+	missingPayload, err := json.Marshal(missing)
 	if err != nil {
-		return fmt.Errorf("marshal missing_ids: %w", err)
+		return fmt.Errorf("marshal missing_video_ids: %w", err)
 	}
 	var generatedAt *time.Time
 	if !logEntry.GeneratedAt.IsZero() {
@@ -50,18 +58,17 @@ func (r *FeedRecommendationLogRepository) Insert(ctx context.Context, sess txman
 		generatedAt = &gt
 	}
 	params := feeddb.InsertRecommendationLogParams{
-		UserID:               mappers.ToPgText(logEntry.UserID),
-		Scene:                logEntry.Scene,
-		Requested:            logEntry.Requested,
-		Returned:             logEntry.Returned,
-		Partial:              logEntry.Partial,
-		RecommendationSource: logEntry.RecommendationSource,
-		LatencyMs:            mappers.ToPgInt4(logEntry.LatencyMS),
-		Column8:              payload,
-		Column9:              mappers.ToPgTimestamptzPtr(generatedAt),
+		UserID:                  mappers.ToPgText(logEntry.UserID),
+		RequestLimit:            logEntry.RequestLimit,
+		RecommendationSource:    logEntry.RecommendationSource,
+		RecommendationLatencyMs: mappers.ToPgInt4(logEntry.RecommendationLatencyMS),
+		RecommendedItems:        recommendedPayload,
+		MissingVideoIds:         missingPayload,
+		ErrorKind:               mappers.ToPgText(logEntry.ErrorKind),
+		GeneratedAt:             mappers.ToPgTimestamptzPtr(generatedAt),
 	}
 	if err := queries.InsertRecommendationLog(ctx, params); err != nil {
-		r.log.WithContext(ctx).Errorw("msg", "insert feed recommendation log failed", "scene", logEntry.Scene, "error", err)
+		r.log.WithContext(ctx).Errorw("msg", "insert feed recommendation log failed", "error", err)
 		return fmt.Errorf("insert feed recommendation log: %w", err)
 	}
 	return nil

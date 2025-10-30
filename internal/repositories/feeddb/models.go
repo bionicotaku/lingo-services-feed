@@ -22,16 +22,15 @@ type FeedInboxEvent struct {
 }
 
 type FeedRecommendationLog struct {
-	LogID                uuid.UUID          `json:"log_id"`
-	UserID               pgtype.Text        `json:"user_id"`
-	Scene                string             `json:"scene"`
-	Requested            int32              `json:"requested"`
-	Returned             int32              `json:"returned"`
-	Partial              bool               `json:"partial"`
-	RecommendationSource string             `json:"recommendation_source"`
-	LatencyMs            pgtype.Int4        `json:"latency_ms"`
-	MissingIds           []byte             `json:"missing_ids"`
-	GeneratedAt          pgtype.Timestamptz `json:"generated_at"`
+	LogID                   uuid.UUID          `json:"log_id"`
+	UserID                  pgtype.Text        `json:"user_id"`
+	RequestLimit            int32              `json:"request_limit"`
+	RecommendationSource    string             `json:"recommendation_source"`
+	RecommendationLatencyMs pgtype.Int4        `json:"recommendation_latency_ms"`
+	RecommendedItems        []byte             `json:"recommended_items"`
+	MissingVideoIds         []byte             `json:"missing_video_ids"`
+	ErrorKind               pgtype.Text        `json:"error_kind"`
+	GeneratedAt             pgtype.Timestamptz `json:"generated_at"`
 }
 
 type FeedVideosProjection struct {

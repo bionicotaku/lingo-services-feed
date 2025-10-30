@@ -7,13 +7,14 @@
 package feedv1
 
 import (
+	reflect "reflect"
+	sync "sync"
+	unsafe "unsafe"
+
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
 )
 
 const (
@@ -26,16 +27,8 @@ const (
 // GetFeedRequest 描述 Feed 获取请求的参数。
 type GetFeedRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 用户标识。匿名用户可留空，具体策略由服务决定。
-	UserId string `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	// 场景标识，例如 "home"、"continue_watching"。
-	Scene string `protobuf:"bytes,2,opt,name=scene,proto3" json:"scene,omitempty"`
 	// 请求条目数量，默认 20，最大 100。
-	Limit int32 `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
-	// 游标，用于分页。
-	Cursor string `protobuf:"bytes,4,opt,name=cursor,proto3" json:"cursor,omitempty"`
-	// 额外元数据，用于透传客户端偏好或实验信息。
-	Metadata      map[string]string `protobuf:"bytes,5,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Limit         int32 `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -70,39 +63,11 @@ func (*GetFeedRequest) Descriptor() ([]byte, []int) {
 	return file_api_feed_v1_feed_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *GetFeedRequest) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *GetFeedRequest) GetScene() string {
-	if x != nil {
-		return x.Scene
-	}
-	return ""
-}
-
 func (x *GetFeedRequest) GetLimit() int32 {
 	if x != nil {
 		return x.Limit
 	}
 	return 0
-}
-
-func (x *GetFeedRequest) GetCursor() string {
-	if x != nil {
-		return x.Cursor
-	}
-	return ""
-}
-
-func (x *GetFeedRequest) GetMetadata() map[string]string {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
 }
 
 // GetFeedResponse 返回补水后的推荐卡片以及分页信息。
@@ -376,16 +341,9 @@ var File_api_feed_v1_feed_proto protoreflect.FileDescriptor
 
 const file_api_feed_v1_feed_proto_rawDesc = "" +
 	"\n" +
-	"\x16api/feed/v1/feed.proto\x12\afeed.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bbuf/validate/validate.proto\"\x83\x02\n" +
-	"\x0eGetFeedRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1f\n" +
-	"\x05scene\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\x05scene\x12\x1f\n" +
-	"\x05limit\x18\x03 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x01R\x05limit\x12\x16\n" +
-	"\x06cursor\x18\x04 \x01(\tR\x06cursor\x12A\n" +
-	"\bmetadata\x18\x05 \x03(\v2%.feed.v1.GetFeedRequest.MetadataEntryR\bmetadata\x1a;\n" +
-	"\rMetadataEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x81\x02\n" +
+	"\x16api/feed/v1/feed.proto\x12\afeed.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bbuf/validate/validate.proto\"1\n" +
+	"\x0eGetFeedRequest\x12\x1f\n" +
+	"\x05limit\x18\x01 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x01R\x05limit\"\x81\x02\n" +
 	"\x0fGetFeedResponse\x12'\n" +
 	"\x05items\x18\x01 \x03(\v2\x11.feed.v1.FeedItemR\x05items\x12\x1f\n" +
 	"\vnext_cursor\x18\x02 \x01(\tR\n" +
@@ -431,30 +389,28 @@ func file_api_feed_v1_feed_proto_rawDescGZIP() []byte {
 	return file_api_feed_v1_feed_proto_rawDescData
 }
 
-var file_api_feed_v1_feed_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_api_feed_v1_feed_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_api_feed_v1_feed_proto_goTypes = []any{
 	(*GetFeedRequest)(nil),        // 0: feed.v1.GetFeedRequest
 	(*GetFeedResponse)(nil),       // 1: feed.v1.GetFeedResponse
 	(*FeedItem)(nil),              // 2: feed.v1.FeedItem
 	(*MissingProjection)(nil),     // 3: feed.v1.MissingProjection
-	nil,                           // 4: feed.v1.GetFeedRequest.MetadataEntry
-	nil,                           // 5: feed.v1.FeedItem.AttributesEntry
-	(*timestamppb.Timestamp)(nil), // 6: google.protobuf.Timestamp
+	nil,                           // 4: feed.v1.FeedItem.AttributesEntry
+	(*timestamppb.Timestamp)(nil), // 5: google.protobuf.Timestamp
 }
 var file_api_feed_v1_feed_proto_depIdxs = []int32{
-	4, // 0: feed.v1.GetFeedRequest.metadata:type_name -> feed.v1.GetFeedRequest.MetadataEntry
-	2, // 1: feed.v1.GetFeedResponse.items:type_name -> feed.v1.FeedItem
-	6, // 2: feed.v1.GetFeedResponse.generated_at:type_name -> google.protobuf.Timestamp
-	3, // 3: feed.v1.GetFeedResponse.missing_projections:type_name -> feed.v1.MissingProjection
-	6, // 4: feed.v1.FeedItem.published_at:type_name -> google.protobuf.Timestamp
-	5, // 5: feed.v1.FeedItem.attributes:type_name -> feed.v1.FeedItem.AttributesEntry
-	0, // 6: feed.v1.FeedService.GetFeed:input_type -> feed.v1.GetFeedRequest
-	1, // 7: feed.v1.FeedService.GetFeed:output_type -> feed.v1.GetFeedResponse
-	7, // [7:8] is the sub-list for method output_type
-	6, // [6:7] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	2, // 0: feed.v1.GetFeedResponse.items:type_name -> feed.v1.FeedItem
+	5, // 1: feed.v1.GetFeedResponse.generated_at:type_name -> google.protobuf.Timestamp
+	3, // 2: feed.v1.GetFeedResponse.missing_projections:type_name -> feed.v1.MissingProjection
+	5, // 3: feed.v1.FeedItem.published_at:type_name -> google.protobuf.Timestamp
+	4, // 4: feed.v1.FeedItem.attributes:type_name -> feed.v1.FeedItem.AttributesEntry
+	0, // 5: feed.v1.FeedService.GetFeed:input_type -> feed.v1.GetFeedRequest
+	1, // 6: feed.v1.FeedService.GetFeed:output_type -> feed.v1.GetFeedResponse
+	6, // [6:7] is the sub-list for method output_type
+	5, // [5:6] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_api_feed_v1_feed_proto_init() }
@@ -468,7 +424,7 @@ func file_api_feed_v1_feed_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_feed_v1_feed_proto_rawDesc), len(file_api_feed_v1_feed_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

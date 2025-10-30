@@ -12,7 +12,7 @@ import (
 
 	videov1 "github.com/bionicotaku/lingo-services-catalog/api/video/v1"
 	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
-	"github.com/bionicotaku/lingo-services-feed/internal/tasks/catalog_inbox"
+	cataloginbox "github.com/bionicotaku/lingo-services-feed/internal/tasks/catalog_inbox"
 	"github.com/bionicotaku/lingo-utils/gcpubsub"
 	outboxcfg "github.com/bionicotaku/lingo-utils/outbox/config"
 	"github.com/bionicotaku/lingo-utils/txmanager"

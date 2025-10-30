@@ -33,14 +33,21 @@ type FeedInboxEvent struct {
 
 // FeedRecommendationLog 描述推荐调用日志。
 type FeedRecommendationLog struct {
-	LogID               string
-	UserID              *string
-	Scene               string
-	Requested           int32
-	Returned            int32
-	Partial             bool
-	RecommendationSource string
-	LatencyMS           *int32
-	MissingIDs          []string
-	GeneratedAt         time.Time
+	LogID                   string
+	UserID                  *string
+	RequestLimit            int32
+	RecommendationSource    string
+	RecommendationLatencyMS *int32
+	RecommendedItems        []RecommendedItemLog
+	MissingVideoIDs         []string
+	ErrorKind               *string
+	GeneratedAt             time.Time
+}
+
+// RecommendedItemLog 记录推荐模块原始返回的条目。
+type RecommendedItemLog struct {
+	VideoID string            `json:"video_id"`
+	Reason  string            `json:"reason"`
+	Score   float64           `json:"score"`
+	Meta    map[string]string `json:"meta,omitempty"`
 }

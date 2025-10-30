@@ -69,16 +69,15 @@ comment on index feed.feed_inbox_events_processed_idx is '按处理状态筛选 
 create table if not exists feed.recommendation_logs (
   log_id        uuid primary key default gen_random_uuid(), -- 日志主键
   user_id       text,                                       -- 用户标识（脱敏/匿名）
-  scene         text not null,                               -- 场景
-  requested     integer not null,                            -- 请求数量
-  returned      integer not null,                            -- 实际返回数量
-  partial       boolean not null default false,              -- 是否补水不完整
+  request_limit integer not null,                            -- 请求的 limit
   recommendation_source text not null,                       -- 推荐来源（mock/random/real）
-  latency_ms    integer,                                     -- 推荐调用耗时
-  missing_ids   jsonb default '[]'::jsonb,                   -- 未补水的 video_id 列表
+  recommendation_latency_ms integer,                         -- 推荐调用耗时
+  recommended_items jsonb not null default '[]'::jsonb,      -- 推荐模块原始返回（含 reason/score）
+  missing_video_ids jsonb not null default '[]'::jsonb,      -- 未补水的 video_id 列表
+  error_kind    text,                                        -- 异常类型（recommendation_unavailable 等）
   generated_at  timestamptz not null default now()           -- 生成时间
 );
 
 comment on table feed.recommendation_logs is 'Feed 推荐调用日志（MVP 可选，用于观测）';
-comment on column feed.recommendation_logs.missing_ids is '未补水的视频 ID 列表（JSON 数组）';
-
+comment on column feed.recommendation_logs.recommended_items is '推荐模块原始返回的有序列表（JSON 数组）';
+comment on column feed.recommendation_logs.missing_video_ids is '未补水的视频 ID 列表（JSON 数组）';

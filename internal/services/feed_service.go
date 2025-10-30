@@ -14,10 +14,7 @@ import (
 // GetFeedInput 描述获取 Feed 所需的参数。
 type GetFeedInput struct {
 	UserID string
-	Scene  string
 	Limit  int
-	Cursor string
-	Meta   map[string]string
 }
 
 // FeedService 是 Feed MVP 的主用例，后续步骤会注入推荐 Provider 与投影仓储。
@@ -40,17 +37,14 @@ func NewFeedService(recommendations RecommendationProvider, projections FeedProj
 func (s *FeedService) GetFeed(ctx context.Context, input GetFeedInput) (*vo.FeedResponse, error) {
 	limit := input.Limit
 	if limit <= 0 {
-		limit = 20
+		limit = 10
 	}
 	if limit > 100 {
 		limit = 100
 	}
 	recResult, err := s.recommendations.GetFeed(ctx, RecommendationInput{
 		UserID: input.UserID,
-		Scene:  input.Scene,
 		Limit:  limit,
-		Cursor: input.Cursor,
-		Meta:   input.Meta,
 	})
 	if err != nil {
 		return nil, err

@@ -46,17 +46,11 @@ func (h *FeedHandler) GetFeed(ctx context.Context, req *feedv1.GetFeedRequest) (
 		return nil, status.Error(codes.Unauthenticated, "invalid user info")
 	}
 
-	userID := req.GetUserId()
-	if userID == "" {
-		userID = meta.UserID
-	}
+	userID := meta.UserID
 
 	input := services.GetFeedInput{
 		UserID: userID,
-		Scene:  req.GetScene(),
 		Limit:  int(req.GetLimit()),
-		Cursor: req.GetCursor(),
-		Meta:   req.GetMetadata(),
 	}
 
 	timeoutCtx, cancel := h.WithTimeout(ctx, HandlerTypeQuery)

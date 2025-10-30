@@ -46,23 +46,28 @@ func FeedInboxEventFromRow(row feeddb.FeedInboxEvent) *po.FeedInboxEvent {
 
 // FeedRecommendationLogFromRow 转换推荐日志。
 func FeedRecommendationLogFromRow(row feeddb.FeedRecommendationLog) (*po.FeedRecommendationLog, error) {
-	var missing []string
-	if len(row.MissingIds) > 0 {
-		if err := json.Unmarshal(row.MissingIds, &missing); err != nil {
-			return nil, fmt.Errorf("unmarshal missing_ids: %w", err)
+	recommended := []po.RecommendedItemLog{}
+	if len(row.RecommendedItems) > 0 {
+		if err := json.Unmarshal(row.RecommendedItems, &recommended); err != nil {
+			return nil, fmt.Errorf("unmarshal recommended_items: %w", err)
+		}
+	}
+	missing := []string{}
+	if len(row.MissingVideoIds) > 0 {
+		if err := json.Unmarshal(row.MissingVideoIds, &missing); err != nil {
+			return nil, fmt.Errorf("unmarshal missing_video_ids: %w", err)
 		}
 	}
 	return &po.FeedRecommendationLog{
-		LogID:                row.LogID.String(),
-		UserID:               textPtr(row.UserID),
-		Scene:                row.Scene,
-		Requested:            row.Requested,
-		Returned:             row.Returned,
-		Partial:              row.Partial,
-		RecommendationSource: row.RecommendationSource,
-		LatencyMS:            int4Ptr(row.LatencyMs),
-		MissingIDs:           missing,
-		GeneratedAt:          mustTimestamp(row.GeneratedAt),
+		LogID:                   row.LogID.String(),
+		UserID:                  textPtr(row.UserID),
+		RequestLimit:            row.RequestLimit,
+		RecommendationSource:    row.RecommendationSource,
+		RecommendationLatencyMS: int4Ptr(row.RecommendationLatencyMs),
+		RecommendedItems:        recommended,
+		MissingVideoIDs:         missing,
+		ErrorKind:               textPtr(row.ErrorKind),
+		GeneratedAt:             mustTimestamp(row.GeneratedAt),
 	}, nil
 }
 

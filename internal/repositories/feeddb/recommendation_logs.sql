@@ -1,23 +1,21 @@
 -- name: InsertRecommendationLog :exec
 insert into feed.recommendation_logs (
   user_id,
-  scene,
-  requested,
-  returned,
-  partial,
+  request_limit,
   recommendation_source,
-  latency_ms,
-  missing_ids,
+  recommendation_latency_ms,
+  recommended_items,
+  missing_video_ids,
+  error_kind,
   generated_at
 )
 values (
-  $1,
-  $2,
-  $3,
-  $4,
-  $5,
-  $6,
-  $7,
-  coalesce($8, '[]'::jsonb),
-  coalesce($9, now())
+  sqlc.arg(user_id),
+  sqlc.arg(request_limit),
+  sqlc.arg(recommendation_source),
+  sqlc.arg(recommendation_latency_ms),
+  coalesce(sqlc.arg(recommended_items), '[]'::jsonb),
+  coalesce(sqlc.arg(missing_video_ids), '[]'::jsonb),
+  sqlc.arg(error_kind),
+  coalesce(sqlc.arg(generated_at), now())
 );

@@ -9,9 +9,10 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/bionicotaku/lingo-services-feed/internal/infrastructure/configloader"
 	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
-	"github.com/bionicotaku/lingo-services-feed/internal/tasks/catalog_inbox"
+	cataloginbox "github.com/bionicotaku/lingo-services-feed/internal/tasks/catalog_inbox"
 	"github.com/bionicotaku/lingo-utils/gclog"
 	"github.com/bionicotaku/lingo-utils/gcpubsub"
 	"github.com/bionicotaku/lingo-utils/observability"

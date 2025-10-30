@@ -15,20 +15,8 @@ service FeedService {
 
 // GetFeedRequest 描述 Feed 获取请求的参数。
 message GetFeedRequest {
-  // 用户标识。匿名用户可留空，具体策略由服务决定。
-  string user_id = 1;
-
-  // 场景标识，例如 "home"、"continue_watching"。
-  string scene = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
-
   // 请求条目数量，默认 20，最大 100。
-  int32 limit = 3 [(buf.validate.field).int32 = {gte: 1, lte: 100}];
-
-  // 游标，用于分页。
-  string cursor = 4;
-
-  // 额外元数据，用于透传客户端偏好或实验信息。
-  map<string, string> metadata = 5;
+  int32 limit = 1 [(buf.validate.field).int32 = {gte: 1, lte: 100}];
 }
 
 // GetFeedResponse 返回补水后的推荐卡片以及分页信息。

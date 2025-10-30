@@ -29,12 +29,11 @@ create table if not exists feed.inbox_events (
 create table if not exists feed.recommendation_logs (
   log_id uuid primary key default gen_random_uuid(),
   user_id text,
-  scene text not null,
-  requested integer not null,
-  returned integer not null,
-  partial boolean not null default false,
+  request_limit integer not null,
   recommendation_source text not null,
-  latency_ms integer,
-  missing_ids jsonb default '[]'::jsonb,
+  recommendation_latency_ms integer,
+  recommended_items jsonb not null default '[]'::jsonb,
+  missing_video_ids jsonb not null default '[]'::jsonb,
+  error_kind text,
   generated_at timestamptz not null default now()
 );

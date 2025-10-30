@@ -14,13 +14,12 @@ import (
 const insertRecommendationLog = `-- name: InsertRecommendationLog :exec
 insert into feed.recommendation_logs (
   user_id,
-  scene,
-  requested,
-  returned,
-  partial,
+  request_limit,
   recommendation_source,
-  latency_ms,
-  missing_ids,
+  recommendation_latency_ms,
+  recommended_items,
+  missing_video_ids,
+  error_kind,
   generated_at
 )
 values (
@@ -28,37 +27,34 @@ values (
   $2,
   $3,
   $4,
-  $5,
-  $6,
+  coalesce($5, '[]'::jsonb),
+  coalesce($6, '[]'::jsonb),
   $7,
-  coalesce($8, '[]'::jsonb),
-  coalesce($9, now())
+  coalesce($8, now())
 )
 `
 
 type InsertRecommendationLogParams struct {
-	UserID               pgtype.Text `json:"user_id"`
-	Scene                string      `json:"scene"`
-	Requested            int32       `json:"requested"`
-	Returned             int32       `json:"returned"`
-	Partial              bool        `json:"partial"`
-	RecommendationSource string      `json:"recommendation_source"`
-	LatencyMs            pgtype.Int4 `json:"latency_ms"`
-	Column8              interface{} `json:"column_8"`
-	Column9              interface{} `json:"column_9"`
+	UserID                  pgtype.Text `json:"user_id"`
+	RequestLimit            int32       `json:"request_limit"`
+	RecommendationSource    string      `json:"recommendation_source"`
+	RecommendationLatencyMs pgtype.Int4 `json:"recommendation_latency_ms"`
+	RecommendedItems        interface{} `json:"recommended_items"`
+	MissingVideoIds         interface{} `json:"missing_video_ids"`
+	ErrorKind               pgtype.Text `json:"error_kind"`
+	GeneratedAt             interface{} `json:"generated_at"`
 }
 
 func (q *Queries) InsertRecommendationLog(ctx context.Context, arg InsertRecommendationLogParams) error {
 	_, err := q.db.Exec(ctx, insertRecommendationLog,
 		arg.UserID,
-		arg.Scene,
-		arg.Requested,
-		arg.Returned,
-		arg.Partial,
+		arg.RequestLimit,
 		arg.RecommendationSource,
-		arg.LatencyMs,
-		arg.Column8,
-		arg.Column9,
+		arg.RecommendationLatencyMs,
+		arg.RecommendedItems,
+		arg.MissingVideoIds,
+		arg.ErrorKind,
+		arg.GeneratedAt,
 	)
 	return err
 }

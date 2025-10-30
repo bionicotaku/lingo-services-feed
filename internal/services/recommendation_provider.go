@@ -13,10 +13,7 @@ type RecommendationProvider interface {
 // RecommendationInput 描述推荐请求参数。
 type RecommendationInput struct {
 	UserID string
-	Scene  string
 	Limit  int
-	Cursor string
-	Meta   map[string]string
 }
 
 // RecommendationResult 包含推荐条目与下一游标。
