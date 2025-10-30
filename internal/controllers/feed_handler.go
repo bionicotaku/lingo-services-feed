@@ -14,17 +14,22 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// feedServiceAPI 定义 FeedHandler 依赖的 Service 能力。
+type feedServiceAPI interface {
+	GetFeed(ctx context.Context, input services.GetFeedInput) (*vo.FeedResponse, error)
+}
+
 // FeedHandler 实现 FeedService gRPC 接口。
 type FeedHandler struct {
 	feedv1.UnimplementedFeedServiceServer
 
 	*BaseHandler
-	service *services.FeedService
+	service feedServiceAPI
 	log     *log.Helper
 }
 
 // NewFeedHandler 构造 FeedHandler。
-func NewFeedHandler(feed *services.FeedService, base *BaseHandler, logger log.Logger) *FeedHandler {
+func NewFeedHandler(feed feedServiceAPI, base *BaseHandler, logger log.Logger) *FeedHandler {
 	if base == nil {
 		base = NewBaseHandler(HandlerTimeouts{})
 	}
@@ -42,7 +47,7 @@ func (h *FeedHandler) GetFeed(ctx context.Context, req *feedv1.GetFeedRequest) (
 	}
 
 	meta := h.ExtractMetadata(ctx)
-	if meta.InvalidUserInfo {
+	if meta.InvalidUserInfo || meta.UserID == "" {
 		return nil, status.Error(codes.Unauthenticated, "invalid user info")
 	}
 

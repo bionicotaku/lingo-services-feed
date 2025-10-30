@@ -6,7 +6,7 @@
   - gRPC：`feed.v1.FeedService/GetFeed`
   - HTTP：`GET /api/v1/feed`
 - **请求映射**
-  - `Authorization` → Gateway 校验并生成 `x-apigateway-api-userinfo`，随后转发；Feed 服务本地默认开启 `skip_validate=true`。
+  - `Authorization` → Gateway 校验并生成 `x-apigateway-api-userinfo`，随后转发；**该 Header 必填**，Feed 服务在本地虽然允许 `skip_validate=true`，但缺失或解析失败会直接返回 `401`。
   - `limit`（query，默认 10，上限 100） → `GetFeedRequest.limit`
 - **响应映射**
   - gRPC 成功 → HTTP 200，Body 直接透传 JSON（由 Gateway 自动转换）。

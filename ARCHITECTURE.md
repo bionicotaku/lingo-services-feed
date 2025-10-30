@@ -145,6 +145,7 @@ message GetFeedResponse {
 ### 5.2 REST `/api/v1/feed`
 
 - **请求参数**：`limit`（默认 10，上限 100）。
+- **必备 Header**：`X-Apigateway-Api-Userinfo`（由 Gateway 解码的用户信息，缺失或解析失败时返回 `401 Unauthorized`）。
 - **响应字段**：`items`（结构同 gRPC）、`paging.next_cursor`、`partial`、`generated_at`、`etag`。
 - **Problem Details**（示例类型）：
   - `feed.errors.recommendation_unavailable`（503）—— 推荐 gRPC 超时或失败。

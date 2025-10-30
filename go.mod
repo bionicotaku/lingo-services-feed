@@ -6,6 +6,7 @@ require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.1-20241127180247-a33202765966.1
 	cloud.google.com/go/pubsub v1.50.1 // indirect
 	cloud.google.com/go/pubsub/v2 v2.0.0 // indirect
+	github.com/bionicotaku/lingo-services-catalog v0.1.0
 	github.com/bionicotaku/lingo-utils v0.1.5
 	github.com/bufbuild/protovalidate-go v0.8.2
 	github.com/docker/go-connections v0.5.0
@@ -28,8 +29,6 @@ require (
 	google.golang.org/grpc v1.76.0
 	google.golang.org/protobuf v1.36.10
 )
-
-require github.com/bionicotaku/lingo-services-catalog v0.0.0-00010101000000-000000000000
 
 require (
 	cel.dev/expr v0.24.0 // indirect
@@ -115,5 +114,3 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gotest.tools/v3 v3.5.2 // indirect
 )
-
-replace github.com/bionicotaku/lingo-services-catalog => ../services-catalog
