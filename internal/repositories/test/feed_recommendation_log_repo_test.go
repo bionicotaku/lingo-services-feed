@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/bionicotaku/lingo-services-feed/internal/models/po"
+	"github.com/bionicotaku/lingo-services-feed/internal/repositories"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 )
@@ -78,4 +80,17 @@ func TestFeedRecommendationLogRepository_Insert(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(missingRaw), &missing))
 	require.ElementsMatch(t, []string{"v2"}, missing)
 	require.WithinDuration(t, generated, generatedAt, time.Second)
+
+	logs, err := repo.List(ctx, nil, repositories.ListRecommendationLogsParams{Limit: 5})
+	require.NoError(t, err)
+	require.NotEmpty(t, logs)
+	listed := logs[0]
+	require.Equal(t, "mock", listed.RecommendationSource)
+	require.ElementsMatch(t, []string{"v2"}, listed.MissingVideoIDs)
+
+	logID, err := uuid.Parse(listed.LogID)
+	require.NoError(t, err)
+	fetched, err := repo.GetByID(ctx, nil, logID)
+	require.NoError(t, err)
+	require.Equal(t, listed.LogID, fetched.LogID)
 }

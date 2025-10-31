@@ -39,17 +39,17 @@
   - [ ] 与 Gateway 团队确认上线窗口（待召开评审会议）。
 
 ## 3. 数据层重构
-- [ ] **3.1 数据迁移脚本**  
+- [x] **3.1 数据迁移脚本**  
   - [x] 创建 `migrations/201_create_feed_schema.sql`：`feed.videos_projection`、`feed.inbox_events`、`feed.recommendation_logs`。  
-  - [ ] 保留旧迁移用于回溯；上线前最后阶段确认废弃策略。  
-  - [x] 通过 Testcontainers 集成测试验证迁移可在 PostgreSQL 中执行。
-- [ ] **3.2 sqlc Schema & 查询**  
+  - [x] 保留旧迁移用于回溯；上线前最后阶段确认废弃策略（已记录在迁移 README，等待上线前统一评审）。  
+  - [x] 通过 Testcontainers 集成测试验证迁移可在 PostgreSQL 中执行（`go test ./internal/services -run TestFeedService_GetFeed_ReturnsItemsAndLogs` 会在 `TestMain` 中自动应用全部迁移）。
+- [x] **3.2 sqlc Schema & 查询**  
   - [x] 新增 `sqlc/schema/201_feed_schema.sql`，同步 Feed 表结构。  
   - [x] 更新 `sqlc.yaml`，生成 `internal/repositories/feeddb` 代码；执行 `sqlc generate`。  
-  - [x] 编写 Feed 投影/Inbox/日志仓储集成测试覆盖核心 DAO。
-- [ ] **3.3 Repository 实现**  
+  - [x] 编写 Feed 投影/Inbox/日志仓储集成测试覆盖核心 DAO（`go test ./internal/repositories/test -run TestFeedRecommendationLogRepository`）。
+- [x] **3.3 Repository 实现**  
   - [x] 新增 Feed 专用仓储：`FeedVideoProjectionRepository`、`FeedInboxRepository`、`FeedRecommendationLogRepository`，完全替换模板仓储。  
-  - [x] 编写集成测试验证写入/读取流程；日志指标细节留待业务落地。
+  - [x] 编写集成测试验证写入/读取流程；日志指标细节留待业务落地（`go test ./internal/repositories/test -run TestFeedRecommendationLogRepository`、`go test ./internal/services -run TestFeedService_GetFeed_ReturnsItemsAndLogs`）。
 - [x] **3.4 事务与连接池配置**  
   - [x] 更新 `config.yaml` 中默认 schema、Feature Flag。  
   - [x] 调整事务默认超时/锁等待/重试次数以适配读多写少。

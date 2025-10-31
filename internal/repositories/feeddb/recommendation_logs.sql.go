@@ -8,8 +8,41 @@ package feeddb
 import (
 	"context"
 
+	uuid "github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const getRecommendationLog = `-- name: GetRecommendationLog :one
+select
+  log_id,
+  user_id,
+  request_limit,
+  recommendation_source,
+  recommendation_latency_ms,
+  recommended_items,
+  missing_video_ids,
+  error_kind,
+  generated_at
+from feed.recommendation_logs
+where log_id = $1
+`
+
+func (q *Queries) GetRecommendationLog(ctx context.Context, logID uuid.UUID) (FeedRecommendationLog, error) {
+	row := q.db.QueryRow(ctx, getRecommendationLog, logID)
+	var i FeedRecommendationLog
+	err := row.Scan(
+		&i.LogID,
+		&i.UserID,
+		&i.RequestLimit,
+		&i.RecommendationSource,
+		&i.RecommendationLatencyMs,
+		&i.RecommendedItems,
+		&i.MissingVideoIds,
+		&i.ErrorKind,
+		&i.GeneratedAt,
+	)
+	return i, err
+}
 
 const insertRecommendationLog = `-- name: InsertRecommendationLog :exec
 insert into feed.recommendation_logs (
@@ -57,4 +90,69 @@ func (q *Queries) InsertRecommendationLog(ctx context.Context, arg InsertRecomme
 		arg.GeneratedAt,
 	)
 	return err
+}
+
+const listRecommendationLogs = `-- name: ListRecommendationLogs :many
+select
+  log_id,
+  user_id,
+  request_limit,
+  recommendation_source,
+  recommendation_latency_ms,
+  recommended_items,
+  missing_video_ids,
+  error_kind,
+  generated_at
+from feed.recommendation_logs
+where
+  ($1::text is null or user_id = $1) and
+  ($2::text is null or recommendation_source = $2) and
+  ($3::timestamptz is null or generated_at >= $3) and
+  ($4::timestamptz is null or generated_at < $4)
+order by generated_at desc
+limit $5
+`
+
+type ListRecommendationLogsParams struct {
+	UserID   pgtype.Text        `json:"user_id"`
+	Source   pgtype.Text        `json:"source"`
+	Since    pgtype.Timestamptz `json:"since"`
+	Until    pgtype.Timestamptz `json:"until"`
+	RowLimit int32              `json:"row_limit"`
+}
+
+func (q *Queries) ListRecommendationLogs(ctx context.Context, arg ListRecommendationLogsParams) ([]FeedRecommendationLog, error) {
+	rows, err := q.db.Query(ctx, listRecommendationLogs,
+		arg.UserID,
+		arg.Source,
+		arg.Since,
+		arg.Until,
+		arg.RowLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FeedRecommendationLog{}
+	for rows.Next() {
+		var i FeedRecommendationLog
+		if err := rows.Scan(
+			&i.LogID,
+			&i.UserID,
+			&i.RequestLimit,
+			&i.RecommendationSource,
+			&i.RecommendationLatencyMs,
+			&i.RecommendedItems,
+			&i.MissingVideoIds,
+			&i.ErrorKind,
+			&i.GeneratedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

@@ -11,6 +11,8 @@ import (
 	"github.com/bionicotaku/lingo-services-feed/internal/repositories/mappers"
 	"github.com/bionicotaku/lingo-utils/txmanager"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -72,4 +74,72 @@ func (r *FeedRecommendationLogRepository) Insert(ctx context.Context, sess txman
 		return fmt.Errorf("insert feed recommendation log: %w", err)
 	}
 	return nil
+}
+
+// GetByID 按 log_id 查询推荐日志。
+func (r *FeedRecommendationLogRepository) GetByID(ctx context.Context, sess txmanager.Session, id uuid.UUID) (*po.FeedRecommendationLog, error) {
+	queries := r.queries
+	if sess != nil {
+		queries = queries.WithTx(sess.Tx())
+	}
+	row, err := queries.GetRecommendationLog(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("get recommendation log: %w", err)
+	}
+	return mappers.FeedRecommendationLogFromRow(row)
+}
+
+// ListRecommendationLogsParams 描述推荐日志的查询条件。
+type ListRecommendationLogsParams struct {
+	UserID *string
+	Source *string
+	Since  *time.Time
+	Until  *time.Time
+	Limit  int
+}
+
+// List 返回满足条件的推荐日志，按时间倒序排序。
+func (r *FeedRecommendationLogRepository) List(ctx context.Context, sess txmanager.Session, params ListRecommendationLogsParams) ([]*po.FeedRecommendationLog, error) {
+	limit := params.Limit
+	if limit <= 0 {
+		limit = 50
+	}
+	queries := r.queries
+	if sess != nil {
+		queries = queries.WithTx(sess.Tx())
+	}
+	dbParams := feeddb.ListRecommendationLogsParams{
+		UserID:   textFromPtr(params.UserID),
+		Source:   textFromPtr(params.Source),
+		Since:    timestamptzFromPtr(params.Since),
+		Until:    timestamptzFromPtr(params.Until),
+		RowLimit: int32(limit),
+	}
+	rows, err := queries.ListRecommendationLogs(ctx, dbParams)
+	if err != nil {
+		return nil, fmt.Errorf("list recommendation logs: %w", err)
+	}
+	result := make([]*po.FeedRecommendationLog, 0, len(rows))
+	for _, row := range rows {
+		entry, mapErr := mappers.FeedRecommendationLogFromRow(row)
+		if mapErr != nil {
+			return nil, mapErr
+		}
+		result = append(result, entry)
+	}
+	return result, nil
+}
+
+func textFromPtr(ptr *string) pgtype.Text {
+	if ptr == nil || *ptr == "" {
+		return pgtype.Text{}
+	}
+	return pgtype.Text{String: *ptr, Valid: true}
+}
+
+func timestamptzFromPtr(ptr *time.Time) pgtype.Timestamptz {
+	if ptr == nil || ptr.IsZero() {
+		return pgtype.Timestamptz{}
+	}
+	return pgtype.Timestamptz{Time: ptr.UTC(), Valid: true}
 }
